@@ -21,11 +21,11 @@ Splatter has three core commands:
 * Use-Splat (.@ or *@)
 
 #### Get-Splat
-|-----------|----------------------------|
+
 |   Alias   |       Variables            |
 |-----------|----------------------------|
 | ?@,gSplat | ${?@}, $gSplat, $GetSplat  |
-|-----------|----------------------------|
+
 
 Get-Splat returns a Dictionary of parameters, given a command or ScriptBlock.  
 This only contains parameters for the command, and converts the parameters into the desired types.
@@ -49,7 +49,7 @@ If it does, it will return the matching inputs for each command.
 Get-Splat will also attach a properties to the Dictionary.  
 
 These property won't be used when calling the splat, but can be peeked at:
-|---------------|-----------------------------------------------|
+
 |   Property    |   Description                                 |
 |---------------|-----------------------------------------------|
 |  Command      |           The Command                         |
@@ -59,18 +59,17 @@ These property won't be used when calling the splat, but can be peeked at:
 |  PercentFit   |  % of properties that map to parameters       |
 |  Unmapped     |  Properties that don't map to parameters      |
 |  WrongType    |  Properties that were the wrong type          |
-|---------------|-----------------------------------------------|
+
 
     $splat = @{id=$pid;foo='bar'} | ?@ gps
     $splat.Command, $splat.PercentFit, $splat.Unmapped
 
 
 #### Find-Splat
-|------------|----------------------------|
 |   Alias    |       Variables            |
 |------------|----------------------------|
 | ??@,fSplat | ${??@}, $fSplat, $FindSplat|
-|------------|----------------------------|
+
 
 
 Find-Splat will find commands that match a given splat, and return information about a match.
@@ -83,11 +82,11 @@ Find-Splat may also be scoped to a given module
 
 
 #### Use-Splat
-|--------------|----------------------------------|
+
 |   Alias      |       Variables                  |
 |--------------|----------------------------------|
 | .@,*@,uSplat | ${.@},${*@}, $uSplat, $UseSplat  |
-|--------------|----------------------------------|
+
 
 Use-Splat will run a splat against one or more commands.
     @{id=$pid} | Use-Splat Get-Process # Gets the current process
@@ -158,10 +157,11 @@ By default, when Splatter is embedded, it will not export functions or aliases, 
     & ${??@} # Find-Splat
     & ${.@} # Use-Splat
 
+You can override this by using -AsFunction
+
+    Initialize-Splatter -AsFunction
+
 If you don't need all of the commands, you can use -Verb
 
     Initialize-Splatter -Verb Get, Use
 
-You can override this by using -AsFunction
-
-    Initialize-Splatter -AsFunction
