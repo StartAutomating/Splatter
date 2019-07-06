@@ -18,7 +18,7 @@ Splatter is tiny, and can be easily embedded into any module.
 Splatter has three core commands:
 * Get-Splat (?@)
 * Find-Splat (??@)
-* Use-Splat (.@ or *@)
+* Use-Splat (.@)
 
 #### Get-Splat
 
@@ -85,7 +85,7 @@ Find-Splat may also be scoped to a given module
 
 |   Alias      |       Variables                  |
 |--------------|----------------------------------|
-| .@,*@,uSplat | ${.@},${*@}, $uSplat, $UseSplat  |
+| .@,uSplat    | ${.@},  $uSplat, $UseSplat       |
 
 
 Use-Splat will run a splat against one or more commands.
