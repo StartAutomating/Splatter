@@ -104,11 +104,11 @@ cXimMTbqP/VR4etMIgAA
                 $myModule.Description
                 "(Install-Module $($myModule.Name), then $($MyInvocation.MyCommand.Name)"
                 $(if ($myParams.Verb) {"-Verb $($verb -join ',')"})
-                foreach ($kv in $myParams.GetEnumerator()) {
+                @(foreach ($kv in $myParams.GetEnumerator()) {
                     if ($kv.Value -is [switch] -and $kv.Value) {
                         "-$($kv.Key)"
                     }
-                }
+                }) | Sort-Object
                 ')'
             ) -join ' ' 
             "#region $logo"
@@ -129,33 +129,14 @@ cXimMTbqP/VR4etMIgAA
                     if ($_.Value -eq $var.Value){ "`${$($_.Name)}"}
                 } }                
                 $val = $var.Value
-                if ($v -eq 'Use' -and $Verb -notcontains 'Find') { # If we don't want Find                     
-                    $regionFinder = '
-\#region         # The region start, followed by 
-(?<RegionName>.*$)                # the RegionName ( which is the remaining content on the line).
-(?<Content>                       # The Region content is 
-    (.|\s)+?                      # anything until     
-    (?=\#endregion\k<RegionName>) # the matching endregion.
-)\#endregion\k<RegionName>        # Then we match the endregion
-' 
-$re = [regex]::new($regionFinder, 'Multiline,IgnoreCase,IgnorePatternWhitespace', '00:00:05')
-$val = $re.Replace("$val", {
-    $content = "$($args[0].Groups['Content'].Value)"
-    if ($content.Contains("Find-Splat") -or $content.Contains('??@')) {
-        return '';
-    } else {
-        return $args[0].ToString()
-    }    
-})
-
-
-                }
+                
                 if ($AsFunction) {
                     "`${function:$v-Splat}"
                 }
                 
                 if ($Minify) {
                     Write-Progress "Minifying" $v -PercentComplete $p -id $id
+                    if ($val -isnot [ScriptBlock]) { $val = [ScriptBlock]::Create($val) } 
                     $val = "{$(& $CompressScriptBlock $val)}"
                 } elseif ($NoHelp) {
                     $val = $val -replace '\<\#(?<Block>(.|\s)+?(?=\#>))\#\>', ''
