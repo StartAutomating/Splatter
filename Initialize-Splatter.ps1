@@ -11,6 +11,8 @@
         Find-Splat
     .Link
         Use-Splat
+    .Link
+        Merge-Splat
     .Example
         Initialize-Splatter > '@.ps1' # Initialize Splatter
     .Example
@@ -21,9 +23,9 @@
     param(
     # The verbs to install.
     [Parameter(ValueFromPipelineByPropertyName=$true)]
-    [ValidateSet('Get','Use','Find')]
+    [ValidateSet('Get','Use','Find','Merge')]
     [string[]]
-    $Verb = @('Get','Use','Find'),
+    $Verb = @('Get','Find','Merge','Use'),
 
     # If set, will not compress the definitions
     [Parameter(ValueFromPipelineByPropertyName=$true)]
@@ -45,10 +47,10 @@
     # If set, will strip inline help from the commands.
     [Parameter(ValueFromPipelineByPropertyName=$true)]
     [switch]
-    $NoHelp,    
-    
+    $NoHelp,
+
     # If set, will define the commands as functions and define aliases.
-    # If you use this, please use the manifest or Export-ModuleMember to hide Splatter's commands.    
+    # If you use this, please use the manifest or Export-ModuleMember to hide Splatter's commands.
     # If not set, Splatter will install as ScriptBlocks (these will not be exported from a module)
     [switch]
     $AsFunction)
@@ -88,7 +90,6 @@ cXimMTbqP/VR4etMIgAA
 '@  )),
     [IO.Compression.CompressionMode]'Decompress')),([Text.Encoding]::unicode))).ReadToEnd()
 ))
-                
 
         $myModule = $MyInvocation.MyCommand.ScriptBlock.Module
     }
@@ -96,7 +97,7 @@ cXimMTbqP/VR4etMIgAA
     process {
         $myParams = @{} + $PSBoundParameters
         $c, $t, $id = 0, $Verb.Count, [Random]::new().Next()
-        @(        
+        @(
         if (-not $NoLogo) {
             $logo = @(
                 $myModule.Name
@@ -110,38 +111,39 @@ cXimMTbqP/VR4etMIgAA
                     }
                 }) | Sort-Object
                 ')'
-            ) -join ' ' 
+            ) -join ' '
             "#region $logo"
-        }        
+        }
         if ($verb -notcontains 'Get') {
             $verb += 'Get'
         }
-        
+
         $innerContent = foreach ($v in $Verb) {
             $var = $ExecutionContext.SessionState.PSVariable.Get("${v}Splat")
-            if ($var.Value -isnot [ScriptBlock]) { continue } 
+            if ($var.Value -isnot [ScriptBlock]) { continue }
             $c++
             $p = $c * 100 / $t
             Write-Progress "Preparing" $v -PercentComplete $p -id $id
             @(
-                $myModule.ExportedVariables.Values | 
+                $myModule.ExportedVariables.Values |
                             & { process {
                     if ($_.Value -eq $var.Value){ "`${$($_.Name)}"}
-                } }                
+                } }
                 $val = $var.Value
-                
+
                 if ($AsFunction) {
                     "`${function:$v-Splat}"
                 }
-                
+
                 if ($Minify) {
                     Write-Progress "Minifying" $v -PercentComplete $p -id $id
-                    if ($val -isnot [ScriptBlock]) { $val = [ScriptBlock]::Create($val) } 
-                    $val = "{$(& $CompressScriptBlock $val)}"
+                    if ($val -isnot [ScriptBlock]) { $val = [ScriptBlock]::Create($val) }
+                    "{$(& $CompressScriptBlock $val)}"
                 } elseif ($NoHelp) {
-                    $val = $val -replace '\<\#(?<Block>(.|\s)+?(?=\#>))\#\>', ''
-                }            
-                $val            
+                    "{$($val -replace '\<\#(?<Block>(.|\s)+?(?=\#>))\#\>', '')}"
+                } else {
+                    "{$val}"
+                }
             ) -join '='
 
             if ($AsFunction) {
@@ -155,7 +157,6 @@ cXimMTbqP/VR4etMIgAA
 
         if ($Compress) {
             Write-Progress "Compressing" " "  -PercentComplete 99 -id $id
-            
             $data = [Text.Encoding]::Unicode.GetBytes("$($innerContent -join [Environment]::NewLine)")
             $ms = New-Object IO.MemoryStream
             $cs = New-Object System.IO.Compression.GZipStream ($ms, [Io.Compression.CompressionMode]"Compress")
@@ -170,12 +171,12 @@ $([Convert]::ToBase64String($ms.ToArray(), 'InsertLineBreaks'))
         [IO.Compression.CompressionMode]'Decompress')),
     [Text.Encoding]::unicode)).ReadToEnd()
 ))"
-            
         } else {
             $innerContent -join [Environment]::NewLine
         }
         if (-not $NoLogo) {
             "#endregion $logo"
         }) -join [Environment]::NewLine
+        Write-Progress "Initialized!" " "  -Completed -id $id
     }
 }

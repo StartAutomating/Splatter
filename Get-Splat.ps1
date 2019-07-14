@@ -14,7 +14,7 @@
     .Example
         @{id=$Pid} | ?@ # ?@ is an alias for Get-Splat
     .Example
-        @{id=$pid} | & ${?@} # Get-Splat as a script block 
+        @{id=$pid} | & ${?@} # Get-Splat as a script block
     #>
     param(
     # The command that is being splatted.
@@ -26,7 +26,7 @@
     [Alias('InputObject')]
     [PSObject]
     $Splat,
-    
+
     # If set, will return regardless of if parameters map,  are valid, and have enough mandatory parameters
     [switch]
     $Force
@@ -36,57 +36,57 @@
         if (-not ${script:_@c}) { ${script:_@c} = @{} }
         if (-not ${script:_@mp}) { ${script:_@mp} = @{} }
     }
-    process {               
+    process {
         $ap,$ac,$amp = ${script:_@p},${script:_@c}, ${script:_@mp}
-        if ($Splat -is [Collections.IDictionary]) { $Splat = [PSCustomObject]$Splat }
-        if ($Splat -is [Collections.ICollection] -and $Splat -is [Collections.IEnumerable]) {
-            foreach ($in in $Splat) {
-                $PSBoundParameters.Splat = $in
-                & $MyInvocation.MyCommand.ScriptBlock @PSBoundParameters
+        if ($Splat -is [Collections.IDictionary]) {
+            if ($splat.GetType().Name -ne 'PSBoundParametersDictionary') {
+                $Splat = [PSCustomObject]$Splat
+            } else {
+                $splat = [PSCustomObject]([Ordered]@{} +  $Splat)
             }
-            return    
         }
 
         $in = $Splat
-        foreach ($cmd in $Command) { 
-       
-            $cmd = 
+        foreach ($cmd in $Command) {
+            $rc =
                 if ($ac.$cmd) {
                     $ac.$cmd
                 } elseif ($cmd -is [string]) {
                     $fc = $ExecutionContext.SessionState.InvokeCommand.GetCommand($cmd,'Function,Cmdlet,ExternalScript,Alias')
-                    $fc = 
+                    $fc =
                         if ($fc -is [Management.Automation.AliasInfo]) {
                             $fc.ResolvedCommand
                         } else {
                             $fc
-                        }                
+                        }
                     $ac.$cmd = $fc
                     $fc
                 } elseif ($cmd -is [ScriptBlock]) {
-                    $ExecutionContext.SessionState.PSVariable.Set("function:f$($cmd.GetHashCode())", $cmd)
-                    $c = $ExecutionContext.SessionState.InvokeCommand.GetCommand("f$($cmd.GetHashCode())",'Function')
+                    $hc = $cmd.GetHashCode()
+                    $ExecutionContext.SessionState.PSVariable.Set("function:f$hc", $cmd)
+                    $c = $ExecutionContext.SessionState.InvokeCommand.GetCommand("f$hc",'Function')
                     $ac.$cmd = $c
                     $c
                 } elseif ($cmd -is [Management.Automation.CommandInfo]) {
                     $ac.$cmd = $cmd
                     $cmd
-                } 
-            if (-not $cmd) { continue }
-            $splat = [ordered]@{}
+                }
+            if (-not $rc) {continue}
+            $cmd = $rc
+            $splat,$Invalid,$Unmapped,$paramMap = foreach ($_ in 1..4){[ordered]@{}}
             $params = [Collections.ArrayList]::new()
             $props = @($in.psobject.properties)
             $pc = $props.Count
-            $paramMap = [Ordered]@{}
+
             $problems = @(foreach ($prop in $props) {
                 $cp=$cmd.Parameters
                 $pn = $prop.Name
                 $pv = $prop.Value
-                if (-not $cp) { continue } 
+                if (-not $cp) { continue }
                 $param = $cp.$pn
                 if (-not $param) {
                     $k = "${cmd}:$pn"
-                    $param = 
+                    $param =
                         if ($ap[$k]) {
                             $ap[$k]
                         } else {
@@ -96,52 +96,50 @@
                                 }
                                 if ($ap[$k]) { $ap[$k]; break }
                             }
-                        }                
+                        }
                 }
 
                 if (-not $param) {
-                    $pn 
-                    continue 
+                    $pn
+                    continue
                 }
                 $paramMap[$param.Name] = $pn
-                if ($params -contains $param) { continue } 
+                if ($params -contains $param) { continue }
                 $pt=$param.ParameterType
                 $v = $pv -as $pt
-                    
-                if (-not $v -and 
-                    ($pt -eq [ScriptBlock] -or 
+                if (-not $v -and
+                    ($pt -eq [ScriptBlock] -or
                     $pt -eq [ScriptBlock[]])) {
-                    $sb = try { [ScriptBlock]::Create($pv) } catch {}
+                    $sb = try { [ScriptBlock]::Create($pv) } catch {$null}
                     if ($sb) { $v = $sb }
-                }                    
+                }
                 if ($v) {
                     $nv = try {
                         [PSVariable]::new("$pn", $v, 'Private',$param.Attributes)
-                    } catch {                        
+                    } catch {
                         @{$pn=$_}
                     }
                     if ($nv -is [PSVariable] -or $Force) {
                         $null = $params.Add($param)
                         $splat[$prop.Name] = $v
                     }
-                    if ($nv -isnot [PSVariable]) { $nv } 
-                } else {                    
-                    @{$pn = $param}                    
+                    if ($nv -isnot [PSVariable]) { $nv }
+                } else {
+                    @{$pn = $param}
                 }
             })
 
-
-            
-            if (-not $amp.$cmd) {                            
+            if (-not $amp.$cmd) {
                 $Mandatory = @{}
-                foreach ($param in ([Management.Automation.CommandMetaData]$cmd).Parameters.Values) {
+                $cmdMd = $cmd -as [Management.Automation.CommandMetaData]
+                foreach ($param in $cmdMd.Parameters.Values) {
                     foreach ($a in $param.Attributes) {
-                        if ($a -isnot [Management.Automation.ParameterAttribute]) { continue }
                         if (-not $a.Mandatory) { continue }
+                        if ($a -isnot [Management.Automation.ParameterAttribute]) { continue }
                         if (-not $Mandatory[$a.ParameterSetName]) { $Mandatory[$a.ParameterSetName] = @{} }
                         $mp = ($paramMap.($param.Name))
                         $Mandatory[$a.ParameterSetName].($param.Name) = if ($mp) { $splat.$mp }
-                    }                                                   
+                    }
                 }
                 $amp.$cmd = $Mandatory
             }
@@ -149,44 +147,34 @@
 
             $missingMandatory = @{}
             foreach ($m in $Mandatory.GetEnumerator()) {
-                $missingMandatory[$m.Key] = 
+                $missingMandatory[$m.Key] =
                     @(foreach ($_ in $m.value.GetEnumerator()) {
-                        if (-not $_.Value) { $_.Key } 
+                        if (-not $_.Value) { $_.Key }
                     })
             }
-            $couldRun = 
+            $couldRun =
                 if (-not $Mandatory.Count) { $true }
                 elseif ($missingMandatory.'__AllParameterSets') {
                     $false
                 }
-                else {                     
+                else {
                     foreach ($_ in $missingMandatory.GetEnumerator()) {
                         if (-not $_.Value) { $true;break }
                     }
                 }
-            
 
             if (-not $couldRun -and -not $Force) { continue }
-                       
-
-            $wrongTypes = [Ordered]@{}
-            $Invalid = [Ordered]@{}
-            $Unmapped = [Ordered]@{}
-            foreach ($p in $problems) { 
+            foreach ($p in $problems) {
                 if ($p -is [Hashtable]) {
-                    if (@($p.Values) -is [Management.Automation.ParameterMetaData]) {
-                        $wrongTypes+=$p 
-                    } else {
-                        $Invalid += $p
-                    }                    
+                    $Invalid += $p
                 } else { $Unmapped[$p] = $in.$p }
             }
-            if ($wrongTypes.Count -eq 0) { $wrongTypes = $null }
-            if ($Invalid.Count -eq 0) { $Invalid = $null } 
-            if ($Unmapped.Count -eq 0) { $Unmapped = $null } 
+            if ($Invalid.Count -eq 0) { $Invalid = $null }
+            if ($Unmapped.Count -eq 0) { $Unmapped = $null }
 
-            $realCmd = 
-                if ($cmd -is [Management.Automation.FunctionInfo] -and $cmd.Name.Contains($cmd.ScriptBlock.GetHashCode().ToString())) {
+            $realCmd =
+                if ($cmd -is [Management.Automation.FunctionInfo] -and
+                    $cmd.Name.Contains($cmd.ScriptBlock.GetHashCode().ToString())) {
                     $cmd.ScriptBlock
                 } else { $cmd }
 
@@ -197,12 +185,10 @@
                 Missing = $missingMandatory
                 PercentFit = $(if ($pc) {$Splat.Count / $pc } else { 0})
                 Unmapped = $Unmapped
-                WrongType=$wrongTypes
-                
             }).GetEnumerator()) {
                 $splat.psobject.properties.Add([Management.Automation.PSNoteProperty]::new($_.Key,$_.Value))
             }
             $splat
-        } 
+        }
     }
 }

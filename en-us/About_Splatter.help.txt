@@ -15,9 +15,10 @@ Splatter is tiny, and can be easily embedded into any module.
 
 ### Using Splatter
 
-Splatter has three core commands:
+Splatter has four core commands:
 * Get-Splat (?@)
 * Find-Splat (??@)
+* Merge-Splat (*@)
 * Use-Splat (.@)
 
 #### Get-Splat
@@ -58,7 +59,6 @@ These property won't be used when calling the splat, but can be peeked at:
 |  Missing      |  Mandatory parameters that are missing        |
 |  PercentFit   |  % of properties that map to parameters       |
 |  Unmapped     |  Properties that don't map to parameters      |
-|  WrongType    |  Properties that were the wrong type          |
 
 
     $splat = @{id=$pid;foo='bar'} | ?@ gps
@@ -79,6 +79,16 @@ Find-Splat will find commands that match a given splat, and return information a
 Find-Splat may also be scoped to a given module
 
     @{splat=@{}} | Find-Splat -Module Splatter
+
+#### Merge-Splat
+|   Alias    |       Variables            |
+|------------|----------------------------|
+| *@,mSplat  | ${*@}, $mSplat, $MergeSplat|
+
+
+Merge splat will merge multiple splats together.
+
+    @{a='b'}, @{c='d'} | Merge-Splat
 
 
 #### Use-Splat
@@ -153,9 +163,10 @@ Then add the following line to your module:
 
 By default, when Splatter is embedded, it will not export functions or aliases, and you will need to use the variable syntax:
 
-    & ${?@} # Get-Splat
+    & ${?@}  # Get-Splat
     & ${??@} # Find-Splat
-    & ${.@} # Use-Splat
+    & ${*@}  # Merge-Splat
+    & ${.@}  # Use-Splat     
 
 You can override this by using -AsFunction
 
