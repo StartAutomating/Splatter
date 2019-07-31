@@ -66,6 +66,8 @@ describe Splatter {
         }
     }
 
+    
+
     context 'Simplified splatting to script blocks' {        
         it 'Is easy to splat a script block' {
             $splat =@{Message='hi'}
@@ -254,6 +256,38 @@ describe Splatter {
         }
     }
     
+    context 'Splatter can be smart about pipelines' {
+        it 'Can determine which parameters can pipe' {
+            $r = 
+                @{Foo='Bar';Baz='Bing'} | 
+                    ?@ {
+                    param(
+                    [Parameter(ValueFromPipelineByPropertyName)]
+                    $Foo,
+
+                    $baz
+                    )
+                }
+            $r.PipelineParameter.Keys | should be foo
+            $r.NonPipelineParameter.Keys | should be baz
+        }
+
+        it 'Can -Stream splats' {
+                @{Foo='Bar';Baz='Bing'},
+                @{Foo='Foo';Baz='Bing2'} | 
+                    .@ {
+                        param(
+                        [Parameter(ValueFromPipelineByPropertyName)]
+                        [PSObject]
+                        $Foo,
+
+                        $baz
+                        )
+                        begin { $baz } 
+                        process { $foo } 
+                    } -Stream | should be bing,bar,foo
+        }
+    }
 
     context 'Splatter tries to be fault-tolerant' {
         it 'Will complain if Use-Splat is not provided with a -Command' {

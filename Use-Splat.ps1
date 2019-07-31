@@ -41,8 +41,18 @@
 
     # If set, will run regardless of if parameters map, are valid, and have enough mandatory parameters.
     [switch]
-    $Force)
+    $Force,
+    
+    # If set, will stream input into a single pipeline of each command.
+    # The non-pipeable parameters of the first input splat will be used to start the pipeline.     
+    # By default, a command will be run once per input splat.   
+    [Alias('Pipe')]
+    [switch]
+    $Stream)
 
+    begin {
+        $pipelines = @{}
+    }
     process {
         $WeTrustTheSplat = $false
         if (-not $Command -and
@@ -76,8 +86,25 @@
                 $Splat |
                     & ${?@} $cmd -Force:$Force |
                     & { process {
+                        
                         $i = $_
+                        $np = $i.NonPipelineParameter
                         $c = $_.psobject.properties['Command'].Value
+                        if ($Stream) {
+                            if (-not $pipelines[$c]) {
+                                
+                                $stepScript = if ($argumentList) { {& $c @np @argumentList} } else { {& $c @np} }
+                                
+                                $stepPipeline = $stepScript.GetSteppablePipeline()
+                                $pipelines[$c] = $stepPipeline
+                                $stepPipeline.Begin($true)
+                            } else {
+                                $stepPipeline = $pipelines[$c]
+                            }
+                            $stepPipeline.Process([PSCustomObject]$i.PipelineParameter)
+                            return
+                        }
+
                         if ($c -is [Management.Automation.CommandInfo] -or $c -is [ScriptBlock]) {
                             if ($ArgumentList) {
                                 & $c @i @ArgumentList
@@ -85,9 +112,15 @@
                                 & $c @i
                             }
                         }
-                    } }
+                    }}
             }
         }
         #endregion UseTheSplat
+    }
+
+    end {
+        if ($pipelines.Count) {
+            foreach ($v in $pipelines.Values) { $v.End() }
+        }
     }
 }

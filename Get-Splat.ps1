@@ -73,7 +73,7 @@
                 }
             if (-not $rc) {continue}
             $cmd = $rc
-            $splat,$Invalid,$Unmapped,$paramMap = foreach ($_ in 1..4){[ordered]@{}}
+            $splat,$Invalid,$Unmapped,$paramMap,$Pipe,$NoPipe = foreach ($_ in 1..6){[ordered]@{}}
             $params = [Collections.ArrayList]::new()
             $props = @($in.psobject.properties)
             $pc = $props.Count
@@ -110,10 +110,10 @@
                 if (-not $v -and
                     ($pt -eq [ScriptBlock] -or
                     $pt -eq [ScriptBlock[]])) {
-                    $sb = try { [ScriptBlock]::Create($pv) } catch {$null}
+                    $sb = try { foreach ($_ in $pv) { [ScriptBlock]::Create($_) }} catch {$null}
                     if ($sb) { $v = $sb }
                 }
-                if ($v) {
+                if ($v -ne $null) {
                     $nv = try {
                         [PSVariable]::new("$pn", $v, 'Private',$param.Attributes)
                     } catch {
@@ -121,8 +121,18 @@
                     }
                     if ($nv -is [PSVariable] -or $Force) {
                         $null = $params.Add($param)
+                        :CanItPipe do {
+                            foreach ($attr in $param.Attributes) {
+                                if ($attr.ValueFromPipeline -or $attr.ValueFromPipelineByPropertyName) {
+                                    $pipe[$prop.Name] = $v
+                                    break CanItPipe
+                                }
+                            }
+                            $NoPipe[$prop.Name] = $v
+                        } while ($false) 
                         $splat[$prop.Name] = $v
                     }
+                    
                     if ($nv -isnot [PSVariable]) { $nv }
                 } else {
                     @{$pn = $param}
@@ -185,6 +195,8 @@
                 Missing = $missingMandatory
                 PercentFit = $(if ($pc) {$Splat.Count / $pc } else { 0})
                 Unmapped = $Unmapped
+                PipelineParameter = $Pipe
+                NonPipelineParameter = $NoPipe
             }).GetEnumerator()) {
                 $splat.psobject.properties.Add([Management.Automation.PSNoteProperty]::new($_.Key,$_.Value))
             }
