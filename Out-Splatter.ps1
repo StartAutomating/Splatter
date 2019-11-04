@@ -254,7 +254,7 @@ foreach (`$in in '$($inputParameter -join "','")') {
                 $parameterName = $param.Substring($lastDollar + 1).Trim()
                 $parameterHelp = if ($cmdHelp) {
                     $cmdHelp.parameters[0].parameter | 
-                        Where-Object { $_.Name -eq $parameterName }|
+                        Where-Object { $_.Name -eq $parameterName -and $_.Description }|
                         Select-Object -ExpandProperty Description | 
                         Select-Object -ExpandProperty Text
                 } else {
