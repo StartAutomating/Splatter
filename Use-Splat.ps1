@@ -42,6 +42,12 @@
     # If set, will run regardless of if parameters map, are valid, and have enough mandatory parameters.
     [switch]
     $Force,
+
+    # If set, will run the best fit out of multiple commands.
+    # The best fit is the command that will use the most of the input splat.
+    [Alias('BestFit','BestFitFunction', 'BF','BFF')]
+    [switch]
+    $Best,
     
     # If set, will stream input into a single pipeline of each command.
     # The non-pipeable parameters of the first input splat will be used to start the pipeline.     
@@ -65,6 +71,13 @@
             $WeTrustTheSplat = $true
             $splat = $_.Splat
             $command = $_.Command
+        }
+
+        if ($Best -and $command.Count) {
+            $command = $splat | 
+                & ${?@} -Command $command | 
+                Sort-Object PercentFit -Descending | 
+                Select-Object -ExpandProperty Command -First 1
         }
 
         if (-not $Command) {

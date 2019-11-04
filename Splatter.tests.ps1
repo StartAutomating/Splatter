@@ -186,10 +186,10 @@ describe Splatter {
         it 'Will find them commands within the -Local module (with a -Command filter)' {
             @{splat=@{}} | ??@ -Local -Command *-Splat
         }
-        it 'Will find commands globally (this may take a while)' {
+        <#it 'Will find commands globally (this may take a while)' {
             $foundAnything = @{ThisIsAParameterNameThatShouldNotExist='blah'} | ??@ -Global
             if ($foundAnything -ne $null) { throw "Should not have found a match" } 
-        }
+        }#>
         it 'Will find commands by wildcard' {
             @{id=$pid} | ??@ Get-*process*
         }
@@ -253,6 +253,22 @@ describe Splatter {
                 throw '${??@} should be undefined'
             }
             $embeddedSplatter.Length | should belessthan 15kb
+        }
+    }
+
+    context 'Out-Splatter' {
+        it 'Can write you a splatting script' {
+            $splatScript = Out-Splatter -CommandName Get-Command -DefaultParameter @{Module='Splatter';CommandType='Alias'} 
+            
+            $splatScript| should belike '*Get-Command*@*'
+        }
+        it 'Can write you a splating function' {
+            $splatFunction = 
+                Out-Splatter -FunctionName Get-SplatterAlias -CommandName Get-Command -DefaultParameter @{
+                    Module='Splatter';CommandType='Alias'
+                } -ExcludeParameter * -Synopsis 'Gets Splatter Aliases' -Description 'Gets aliases from the module Splatter'
+        
+            $splatFunction | should belike '*function Get-SplatterAlias*{*Get-Command*@*'
         }
     }
     

@@ -101,6 +101,9 @@ cXimMTbqP/VR4etMIgAA
         if (-not $NoLogo) {
             $logo = @(
                 $myModule.Name
+                '['
+                $myModule.Version
+                ']'
                 ':'
                 $myModule.Description
                 "(Install-Module $($myModule.Name), then $($MyInvocation.MyCommand.Name)"

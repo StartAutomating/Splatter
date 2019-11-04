@@ -21,6 +21,7 @@
     [Parameter(Mandatory=$true,Position=0)]
     [PSObject[]]
     $Command,
+
     # The input object
     [Parameter(Mandatory=$true,ValueFromPipeline=$true,Position=1)]
     [Alias('InputObject')]
