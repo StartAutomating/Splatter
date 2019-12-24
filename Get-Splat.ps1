@@ -114,7 +114,7 @@
                     $sb = try { foreach ($_ in $pv) { [ScriptBlock]::Create($_) }} catch {$null}
                     if ($sb) { $v = $sb }
                 }
-                if ($v -ne $null) {
+                if ($null -ne $v) {
                     $nv = try {
                         [PSVariable]::new("$pn", $v, 'Private',$param.Attributes)
                     } catch {

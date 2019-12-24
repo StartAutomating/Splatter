@@ -54,7 +54,7 @@
     # If not set, Splatter will install as ScriptBlocks (these will not be exported from a module)
     [switch]
     $AsFunction,
-    
+
     # If set, splatter will be defined inline.
     # This will not preface Splatter with a param() block and PSScriptAnalyzer suppression messages
     [switch]
@@ -181,7 +181,7 @@ $([Convert]::ToBase64String($ms.ToArray(), 'InsertLineBreaks'))
     [Text.Encoding]::unicode)).ReadToEnd()
 ))"
         } else {
-            
+
             @(@(if (-not $inline) {'
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification="This Declares Variables for Other Scripts")]
 param()'
