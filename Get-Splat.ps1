@@ -130,10 +130,10 @@
                                 }
                             }
                             $NoPipe[$prop.Name] = $v
-                        } while ($false) 
+                        } while ($false)
                         $splat[$prop.Name] = $v
                     }
-                    
+
                     if ($nv -isnot [PSVariable]) { $nv }
                 } else {
                     @{$pn = $param}
