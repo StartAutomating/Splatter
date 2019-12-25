@@ -73,10 +73,10 @@
     [Alias('M','ReMap')]
     [Collections.IDictionary]
     $Map,
-    
+
     [switch]
     $Keep,
-    
+
     [switch]
     $Replace)
 
@@ -87,7 +87,7 @@
             if ($i -is [Collections.IDictionary]) {
                 try { $o += $i }
                 catch {
-                    foreach ($kv in $i.GetEnumerator()) { 
+                    foreach ($kv in $i.GetEnumerator()) {
                         $gotIt? = $o.Contains($kv.Key)
                         if ($gotIt? -and $Keep) { continue }
                         if ($gotIt? -and $Replace) {
@@ -101,7 +101,7 @@
                             $o[$kv.Key] = $kv.Value
                         }
                     }
-                        
+
                 }
             } else {
                 foreach ($prop in $i.psobject.properties) { $o[$prop.Name] = $prop.Value }

@@ -48,10 +48,10 @@
     [Alias('BestFit','BestFitFunction', 'BF','BFF')]
     [switch]
     $Best,
-    
+
     # If set, will stream input into a single pipeline of each command.
-    # The non-pipeable parameters of the first input splat will be used to start the pipeline.     
-    # By default, a command will be run once per input splat.   
+    # The non-pipeable parameters of the first input splat will be used to start the pipeline.
+    # By default, a command will be run once per input splat.
     [Alias('Pipe')]
     [switch]
     $Stream)
@@ -74,9 +74,9 @@
         }
 
         if ($Best -and $command.Count) {
-            $command = $splat | 
-                & ${?@} -Command $command | 
-                Sort-Object PercentFit -Descending | 
+            $command = $splat |
+                & ${?@} -Command $command |
+                Sort-Object PercentFit -Descending |
                 Select-Object -ExpandProperty Command -First 1
         }
 
@@ -99,15 +99,15 @@
                 $Splat |
                     & ${?@} $cmd -Force:$Force |
                     & { process {
-                        
+
                         $i = $_
                         $np = $i.NonPipelineParameter
                         $c = $_.psobject.properties['Command'].Value
                         if ($Stream) {
                             if (-not $pipelines[$c]) {
-                                
+
                                 $stepScript = if ($argumentList) { {& $c @np @argumentList} } else { {& $c @np} }
-                                
+
                                 $stepPipeline = $stepScript.GetSteppablePipeline()
                                 $pipelines[$c] = $stepPipeline
                                 $stepPipeline.Begin($true)

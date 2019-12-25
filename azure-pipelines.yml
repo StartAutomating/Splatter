@@ -1,4 +1,3 @@
-
 trigger: 
   paths: 
     exclude: 
@@ -239,5 +238,3 @@ stages:
                   }
               }
             displayName: PublishPowerShellGallery
-
-
