@@ -43,7 +43,7 @@
             $n = 0
         } process {
             $n++
-            if ($t -and $id) {
+            if ($t -is [int] -and $id) {
                 $p = $n* 100 / $t
                 Write-Progress "Resolving" "$_ " -PercentComplete $p -Id $id
             }
