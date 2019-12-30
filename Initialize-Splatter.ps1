@@ -53,7 +53,13 @@
     # If you use this, please use the manifest or Export-ModuleMember to hide Splatter's commands.
     # If not set, Splatter will install as ScriptBlocks (these will not be exported from a module)
     [switch]
-    $AsFunction)
+    $AsFunction,
+
+    # If set, splatter will be defined inline.
+    # This will not preface Splatter with a param() block and PSScriptAnalyzer suppression messages
+    [switch]
+    $Inline
+    )
 
     begin {
         $CompressScriptBlock = ([ScriptBlock]::Create((
@@ -175,7 +181,11 @@ $([Convert]::ToBase64String($ms.ToArray(), 'InsertLineBreaks'))
     [Text.Encoding]::unicode)).ReadToEnd()
 ))"
         } else {
-            $innerContent -join [Environment]::NewLine
+
+            @(@(if (-not $inline) {'
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification="This Declares Variables for Other Scripts")]
+param()'
+}) + $innerContent) -join [Environment]::NewLine
         }
         if (-not $NoLogo) {
             "#endregion $logo"
