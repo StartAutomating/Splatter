@@ -140,27 +140,26 @@
                 }
             })
 
-            if (-not $amp.$cmd) {
-                $Mandatory = @{}
-                $cmdMd = $cmd -as [Management.Automation.CommandMetaData]
-                foreach ($param in $cmdMd.Parameters.Values) {
-                    foreach ($a in $param.Attributes) {
-                        if (-not $a.Mandatory) { continue }
-                        if ($a -isnot [Management.Automation.ParameterAttribute]) { continue }
-                        if (-not $Mandatory[$a.ParameterSetName]) { $Mandatory[$a.ParameterSetName] = @{} }
-                        $mp = ($paramMap.($param.Name))
-                        $Mandatory[$a.ParameterSetName].($param.Name) = if ($mp) { $splat.$mp }
-                    }
+            $Mandatory = @{}
+            $cmdMd = $cmd -as [Management.Automation.CommandMetaData]
+            foreach ($param in $cmdMd.Parameters.Values) {
+                foreach ($a in $param.Attributes) {
+                    if (-not $a.Mandatory) { continue }
+                    if ($a -isnot [Management.Automation.ParameterAttribute]) { continue }
+                    if (-not $Mandatory[$a.ParameterSetName]) { $Mandatory[$a.ParameterSetName] = @{} }
+                    $mp = ($paramMap.($param.Name))
+                    $Mandatory[$a.ParameterSetName].($param.Name) = if ($mp) { $splat.$mp }
                 }
-                $amp.$cmd = $Mandatory
             }
+            $amp.$cmd = $Mandatory
+
             $mandatory = $amp.$cmd
 
             $missingMandatory = @{}
             foreach ($m in $Mandatory.GetEnumerator()) {
                 $missingMandatory[$m.Key] =
                     @(foreach ($_ in $m.value.GetEnumerator()) {
-                        if (-not $_.Value) { $_.Key }
+                        if ($null -eq $_.Value) { $_.Key }
                     })
             }
             $couldRun =
