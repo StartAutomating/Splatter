@@ -116,6 +116,11 @@
     [int]
     $Offset,
 
+    # If provided, dynamic parameters will be created in a new parameter set, named $NewParameterSetName.
+    [Parameter(ParameterSetName='DynamicSplatter')]
+    [string]
+    $NewParameterSetName,
+
     # If set, will cross errors into the output stream.
     # You SHOULD cross the streams when dealing with console applications, as many of them like to return output on standard error.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -189,7 +194,7 @@
             `$$SafeCommandName.Parameters[`$in].Attributes
         ))
     }"
-            if ($Unpiped -or $Offset) {
+            if ($Unpiped -or $Offset -or $NewParameterSetName) {
 "    foreach (`$paramName in `$$variableName.Keys) {
         foreach (`$attr in `$$variableName[`$paramName].Attributes) {
 $(@(
@@ -199,7 +204,11 @@ $(@(
             }
             if ($Offset) {
 "             if (`$attr.Position -ge 0) { `$attr.Position += $offset }"
-            })  -join [Environment]::NewLine)
+            }
+            if ($NewParameterSetName) {
+"             if (`$attr.psobject.properties('ParameterSetName')) { `$attr.ParameterSetName = '$NewParameterSetName' }"
+            }
+            )  -join [Environment]::NewLine)
         }
     }"
             }
