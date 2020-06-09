@@ -23,7 +23,7 @@
     param(
     # The verbs to install.
     [Parameter(ValueFromPipelineByPropertyName=$true)]
-    [ValidateSet('Get','Use','Find','Merge')]
+    [ValidateSet('Get','Use','Find','Merge','Out')]
     [string[]]
     $Verb = @('Get','Find','Merge','Use'),
 

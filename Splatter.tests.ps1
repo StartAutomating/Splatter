@@ -256,15 +256,15 @@ describe Splatter {
         }
     }
 
-    context 'Out-Splatter' {
+    context 'Out-Splat' {
         it 'Can write you a splatting script' {
-            $splatScript = Out-Splatter -CommandName Get-Command -DefaultParameter @{Module='Splatter';CommandType='Alias'}
+            $splatScript = Out-Splat -CommandName Get-Command -DefaultParameter @{Module='Splatter';CommandType='Alias'}
 
             $splatScript| should belike '*Get-Command*@*'
         }
         it 'Can write you a splating function' {
             $splatFunction =
-                Out-Splatter -FunctionName Get-SplatterAlias -CommandName Get-Command -DefaultParameter @{
+                Out-Splat -FunctionName Get-SplatterAlias -CommandName Get-Command -DefaultParameter @{
                     Module='Splatter';CommandType='Alias'
                 } -ExcludeParameter * -Synopsis 'Gets Splatter Aliases' -Description 'Gets aliases from the module Splatter'
 

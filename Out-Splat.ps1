@@ -1,4 +1,4 @@
-﻿function Out-Splatter
+﻿function Out-Splat
 {
     <#
     .Synopsis
@@ -7,38 +7,34 @@
         Outputs a function or script that primarily calls another command.  This can get messy to write by hand.
     .Link
         Initialize-Splatter
+    .Example
+        Out-Splat -CommandName Get-Command
     #>
     [CmdletBinding(DefaultParameterSetName='JustTheSplatter')]
     [OutputType([string])]
     param(
     # The name of the command that will be splatted
-    [Parameter(Mandatory=$true,Position=0,ValueFromPipelineByPropertyName=$true)]
+    [Parameter(Mandatory=$true,Position=0,ValueFromPipelineByPropertyName)]
     [Alias('Name')]
     [string]
     $CommandName,
 
     # A hashtable of default parameters.  These will always be passed to the underlying command by name.
-    [Parameter(Position=1,ValueFromPipelineByPropertyName=$true)]
+    [Parameter(Position=1,ValueFromPipelineByPropertyName)]
     [Alias('DefaultParameters')]
     [Hashtable]
     $DefaultParameter = @{},
 
     # A list of arguments.  These will be always be passed to the underlying commands by position.
     # Items starting with $ will be treated as a variable.
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string[]]
     $ArgumentList,
-
-    # An optional name of a generated function.
-    # If provided, this function will declare any input parameters specified in -InputParameter
-    [Parameter(Mandatory=$true,Position=2,ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionalSplatter')]
-    [string]
-    $FunctionName,
 
     # A list of parameters names that will be inputted from the original command into the splat.
     # If generating a function, these parameter declarations will be copied from the underlying command.
     # Help for these parameters will be included as comment-based help
-    [Parameter(Position=3,ValueFromPipelineByPropertyName=$true)]
+    [Parameter(Position=3,ValueFromPipelineByPropertyName)]
     [Alias('IncludeParameter')]
     [string[]]
     $InputParameter,
@@ -46,53 +42,88 @@
     # A list of parameters that will be excluded from the original function.
     # This is only valid when generating a function.
     # Wildcards may be used.
-    [Parameter(Position=4,ValueFromPipelineByPropertyName=$true)]
+    [Parameter(Position=4,ValueFromPipelineByPropertyName)]
     [string[]]
     $ExcludeParameter,
 
     # If set, values from input parameters will override default values.
     [Alias('OverrideDefault','OverwriteDefault', 'DefaultOverwrite')]
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ValueFromPipelineByPropertyName)]
     [Switch]
     $DefaultOverride,
 
     # If set, any variable with a non-null value matching the input parameters will be used to splat.
     # If not set, only bound parameters will be used to splat.
     # If no function name is provided, this will automatically be set
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ValueFromPipelineByPropertyName)]
     [Switch]
     $VariableInput,
 
-    # The name of the variable used to hold the splatted parameters.  By default, splat
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    # The name of the variable used to hold the splatted parameters.  By default, ${CommandName}Parameters (e.g. GetHelpP
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [Alias('SplatName')]
     [string]
-    $SplatName = 'splat',
+    $VariableName,
+
+    # An optional name of a generated function.
+    # If provided, this function will declare any input parameters specified in -InputParameter
+    [Parameter(Mandatory=$true,Position=2,ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
+    [string]
+    $FunctionName,
 
     # The synopsis.
     # This is used to make comment-based help in a generated function.
     # By default, it is : "Wraps $CommandName"
-    [Parameter(ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionalSplatter')]
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
     [string]
     $Synopsis,
 
     # The description.
     # This is used to make comment-based help in a generated function.
-    [Parameter(ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionalSplatter')]
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
     [string]
     $Description,
 
     # The CmdletBinding attribute for a new function
-    [Parameter(ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionalSplatter')]
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
     [string]
     $CmdletBinding,
+
+    # A set of additional parameter declarations.
+    # The keys are the names of the parameters, and the values can be a type and a string containing parameter binding and inline help.
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
+    [Hashtable]
+    $AdditionalParameter,
 
     # The serialization depth for default parameters.  By default, 2.
     [uint32]
     $SerializationDepth = 2,
 
+
+    # If set, will generate the code to collect the -CommandName input as dynamic parameters.
+    [Parameter(Mandatory,ParameterSetName='DynamicSplatter')]
+    [Alias('DynamicParameters')]
+    [switch]
+    $DynamicParameter,
+
+    # If set, will not allow dynamic parameters to use ValueFromPipeline or ValueFromPipelineByPropertyName
+    [Parameter(ParameterSetName='DynamicSplatter')]
+    [switch]
+    $Unpiped,
+
+    # If provided, will offset the position of any positional parameters.
+    [Parameter(ParameterSetName='DynamicSplatter')]
+    [int]
+    $Offset,
+
+    # If provided, dynamic parameters will be created in a new parameter set, named $NewParameterSetName.
+    [Parameter(ParameterSetName='DynamicSplatter')]
+    [string]
+    $NewParameterSetName,
+
     # If set, will cross errors into the output stream.
     # You SHOULD cross the streams when dealing with console applications, as many of them like to return output on standard error.
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ValueFromPipelineByPropertyName)]
     [Switch]
     $CrossStream,
 
@@ -112,44 +143,16 @@
     # This assumes that the first item in the script block is a command, and it will accept the output of the splat as pipelined input
     [ScriptBlock]
     [Alias('PipeInto','Pipe')]
-    $PipeTo,
-
-    # A set of additional parameter declarations.  The keys are the names of the parameters, and the values can be a type and a string containing parameter binding and inline help.
-    [Parameter(ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionalSplatter')]
-    [Hashtable]
-    $AdditionalParameter)
+    $PipeTo)
 
     process {
+        # First, let's find the command.
         $commandExists = $ExecutionContext.SessionState.InvokeCommand.GetCommand($CommandName, 'All')
 
-        if (-not $commandExists) {
+        if (-not $commandExists) { # If we don't, error out.
             Write-Error "$CommandName does not exist"
             return
         }
-        $defaultDeclaration =
-            if ($DefaultParameter.Count) {
-                $toSplat = "@'
-$(ConvertTo-Json $DefaultParameter -Depth $SerializationDepth)
-'@"
-                "`$${splatName}Default = ConvertFrom-Json $toSplat"
-                "`$$splatName = @{}"
-                "foreach (`$property in `$${splatName}Default.psobject.properties) {
-`$$SplatName[`$property.Name] = `$property.Value
-if (`$property.Value -is [string] -and `$property.Value.StartsWith('`$')) {
-    `$$SplatName[`$property.Name] = `$executionContext.SessionState.PSVariable.Get(`$property.Value.Substring(1)).Value
-}
-}"
-            } elseif ($ArgumentList.Count) {
-                "`$$splatName = " + @(foreach ($a in $ArgumentList) {
-                    if ($a.StartsWith('$')) {
-                        $a
-                    } else {
-                        "'$($a.Replace("'","''"))'"
-                    }
-                }) -join ','
-            } else {
-                "`$$splatName = @{}"
-            }
 
         if ($InputParameter.Count -eq 1 -and $InputParameter -eq '*') {
             if ($commandExists -is [Management.Automation.ApplicationInfo]) {
@@ -159,10 +162,96 @@ if (`$property.Value -is [string] -and `$property.Value.StartsWith('`$')) {
             }
         }
 
+        if ($DynamicParameter) {
+            if (-not $VariableName) {  # If no -VariableName was provided,
+                $VariableName = "$($CommandName -replace '[\W\s]','')DynamicParameters" # default to ${CommandName}DynamicParameters
+            }
+            $safeCommandName = $($CommandName -replace '[\W\s]','')
+            @(
+            "if (-not `$$VariableName) {
+    `$$VariableName = [Management.Automation.RuntimeDefinedParameterDictionary]::new()"
+            "    `$$($CommandName -replace '[\W\s]','') = `$executionContext.SessionState.InvokeCommand.GetCommand('$CommandName', 'All')"
+            $inputForeach =
+                if ($InputParameter) {
+                    "'$(@(:nextInputParameter foreach ($in in $InputParameter) {
+                        foreach ($ex in $ExcludeParameter) {
+                            if ($in -like $ex) { continue nextInputParameter }
+                        }
+                        $in
+                    }) -join "','")'"
+                } else {
+                    "([Management.Automation.CommandMetaData]`$$safeCommandName).Parameters.Keys"
+                }
+            "    :nextInputParameter foreach (`$in in $inputForeach) {
+        $(if ($ExcludeParameter) {
+                "foreach (`$ex in '$($ExcludeParameter -join "','")') {
+            if (`$in -like `$ex) { continue nextInputParameter }
+        }
+"})
+        `$$variableName.Add(`$in, [Management.Automation.RuntimeDefinedParameter]::new(
+            `$$SafeCommandName.Parameters[`$in].Name,
+            `$$SafeCommandName.Parameters[`$in].ParameterType,
+            `$$SafeCommandName.Parameters[`$in].Attributes
+        ))
+    }"
+            if ($Unpiped -or $Offset -or $NewParameterSetName) {
+"    foreach (`$paramName in `$$variableName.Keys) {
+        foreach (`$attr in `$$variableName[`$paramName].Attributes) {
+$(@(
+            if ($Unpiped) {
+'             if ($attr.ValueFromPipeline) {$attr.ValueFromPipeline = $false}'
+'             if ($attr.ValueFromPipelineByPropertyName) {$attr.ValueFromPipelineByPropertyName = $false}'
+            }
+            if ($Offset) {
+"             if (`$attr.Position -ge 0) { `$attr.Position += $offset }"
+            }
+            if ($NewParameterSetName) {
+"             if (`$attr.psobject.properties('ParameterSetName')) { `$attr.ParameterSetName = '$NewParameterSetName' }"
+            }
+            )  -join [Environment]::NewLine)
+        }
+    }"
+            }
+            '}'
+            "`$$variableName"
+
+            ) -join [Environment]::NewLine
+            return
+        }
+
+        if (-not $VariableName) {  # Next, if no -VariableName was provided,
+            $VariableName = "$($CommandName -replace '[\W\s]','')Parameters"
+        }
+
+        $defaultDeclaration =
+            if ($DefaultParameter.Count) {
+                $toSplat = "@'
+$(ConvertTo-Json $DefaultParameter -Depth $SerializationDepth)
+'@"
+                "`$${VariableName}Default = ConvertFrom-Json $toSplat"
+                "`$$VariableName = @{}"
+                "foreach (`$property in `$${VariableName}Default.psobject.properties) {
+    `$$VariableName[`$property.Name] = `$property.Value
+    if (`$property.Value -is [string] -and `$property.Value.StartsWith('`$')) {
+        `$$VariableName[`$property.Name] = `$executionContext.SessionState.PSVariable.Get(`$property.Value.Substring(1)).Value
+    }
+}"
+            } elseif ($ArgumentList.Count) {
+                "`$$VariableName = " + @(foreach ($a in $ArgumentList) {
+                    if ($a.StartsWith('$')) {
+                        $a
+                    } else {
+                        "'$($a.Replace("'","''"))'"
+                    }
+                }) -join ','
+            } else {
+                "`$$VariableName = @{}"
+            }
+
         if (-not $FunctionName) { $VariableInput = $true }
 
         $paramSplat =
-        if ($InputParameter) {
+        if ($InputParameter -or $FunctionName) {
             if ($VariableInput) {
 "
 #region Copy Parameters from $CommandName
@@ -170,24 +259,24 @@ foreach (`$in in '$($inputParameter -join "','")') {
     `$var = `$executionContext.SessionState.PSVariable.Get(`$in)
     if (-not `$var) { continue }
     $(if ($DefaultOverride) {
-    "`$$splatName.`$in = `$var.Value"
+    "`$$VariableName.`$in = `$var.Value"
     } else {
-    "`$$splatName.`$in = `$var.Value"
+    "`$$VariableName.`$in = `$var.Value"
     })
 }
 #endregion Copy Parameters from $CommandName
 "
             } else {
                 "#region Copy Parameters from $CommandName
-`$MyParameters = @{} + `$psBoundParameters # Copy `$PSBoundParameters
-foreach (`$in in '$($inputParameter -join "','")') {
+`$MyParameters = [Ordered]@{} + `$psBoundParameters # Copy `$PSBoundParameters
+foreach (`$in in $(if ($inputParameter) { "'$($inputParameter -join "','")'" } else { "`$MyParameters.Keys`"})) {
     $(if ($DefaultOverride) {
     "if (`$myParameters.`$in) {
-        `$$splatName.`$in = `$myParameters.`$in
+        `$$VariableName.`$in = `$myParameters.`$in
     }"
     } else {
-    "if (-not `$$splatName.`$in -and `$myParameters.`$in) {
-        `$$splatName.`$in = `$myParameters.`$in
+    "if (-not `$$VariableName.`$in -and `$myParameters.`$in) {
+        `$$VariableName.`$in = `$myParameters.`$in
     }"})
 }
 #endregion Copy Parameters from $CommandName
@@ -201,9 +290,9 @@ foreach (`$in in '$($inputParameter -join "','")') {
 
         $cmdDef =
             if ([Management.Automation.ExternalScriptInfo],[Management.Automation.ApplicationInfo]  -contains $commandExists.GetType()) {
-                " & '$($commandExists.Source.Replace("'","''"))' @$splatName"
+                " & '$($commandExists.Source.Replace("'","''"))' @$VariableName"
             } else {
-                "$commandExists @$splatName"
+                "$commandExists @$VariableName"
             }
 
         if ($CrossStream) {
@@ -300,7 +389,6 @@ $parameterHelp
                 foreach ($kv in $AdditionalParameter.GetEnumerator()) {
                     $varName = if ($kv.Key.StartsWith('$')) { $kv.Key } else { '$' + $kv.Key }
 
-
                     $newParamBlockPart =
                     if ($kv.Value -is [type]) {
                         if ($kv.Value.FullName -like "System.*") {
@@ -393,8 +481,6 @@ $(@(foreach ($line in $coreSplat -split ([Environment]::Newline)) {
     }
 }
 "
-
-            #[Management.Automation.Proxycommand]::GetHelpComments($cmdHelp)
 
         } else {
             $coreSplat
