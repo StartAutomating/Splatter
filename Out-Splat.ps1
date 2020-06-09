@@ -99,7 +99,7 @@
     [uint32]
     $SerializationDepth = 2,
 
-    
+
     # If set, will generate the code to collect the -CommandName input as dynamic parameters.
     [Parameter(Mandatory,ParameterSetName='DynamicSplatter')]
     [Alias('DynamicParameters')]
@@ -158,7 +158,7 @@
         }
 
         if ($DynamicParameter) {
-            if (-not $VariableName) {  # If no -VariableName was provided, 
+            if (-not $VariableName) {  # If no -VariableName was provided,
                 $VariableName = "$($CommandName -replace '[\W\s]','')DynamicParameters" # default to ${CommandName}DynamicParameters
             }
             $safeCommandName = $($CommandName -replace '[\W\s]','')
@@ -166,7 +166,7 @@
             "if (-not `$$VariableName) {
     `$$VariableName = [Management.Automation.RuntimeDefinedParameterDictionary]::new()"
             "    `$$($CommandName -replace '[\W\s]','') = `$executionContext.SessionState.InvokeCommand.GetCommand('$CommandName', 'All')"
-            $inputForeach = 
+            $inputForeach =
                 if ($InputParameter) {
                     "'$(@(:nextInputParameter foreach ($in in $InputParameter) {
                         foreach ($ex in $ExcludeParameter) {
@@ -184,8 +184,8 @@
         }
 "})
         `$$variableName.Add(`$in, [Management.Automation.RuntimeDefinedParameter]::new(
-            `$$SafeCommandName.Parameters[`$in].Name, 
-            `$$SafeCommandName.Parameters[`$in].ParameterType, 
+            `$$SafeCommandName.Parameters[`$in].Name,
+            `$$SafeCommandName.Parameters[`$in].ParameterType,
             `$$SafeCommandName.Parameters[`$in].Attributes
         ))
     }"
@@ -193,7 +193,7 @@
 "    foreach (`$paramName in `$$variableName.Keys) {
         foreach (`$attr in `$$variableName[`$paramName].Attributes) {
 $(@(
-            if ($Unpiped) { 
+            if ($Unpiped) {
 '             if ($attr.ValueFromPipeline) {$attr.ValueFromPipeline = $false}'
 '             if ($attr.ValueFromPipelineByPropertyName) {$attr.ValueFromPipelineByPropertyName = $false}'
             }
@@ -210,7 +210,7 @@ $(@(
             return
         }
 
-        if (-not $VariableName) {  # Next, if no -VariableName was provided, 
+        if (-not $VariableName) {  # Next, if no -VariableName was provided,
             $VariableName = "$($CommandName -replace '[\W\s]','')Parameters"
         }
 
