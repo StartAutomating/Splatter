@@ -11,7 +11,7 @@
         Out-Splat -CommandName Get-Command
     #>
     [CmdletBinding(DefaultParameterSetName='JustTheSplatter')]
-    [OutputType([string])]
+    [OutputType([ScriptBlock])]
     param(
     # The name of the command that will be splatted
     [Parameter(Mandatory=$true,Position=0,ValueFromPipelineByPropertyName)]
@@ -167,7 +167,8 @@
                 $VariableName = "$($CommandName -replace '[\W\s]','')DynamicParameters" # default to ${CommandName}DynamicParameters
             }
             $safeCommandName = $($CommandName -replace '[\W\s]','')
-            @(
+            
+            return [ScriptBlock]::Create(@(
             "if (-not `$$VariableName) {
     `$$VariableName = [Management.Automation.RuntimeDefinedParameterDictionary]::new()"
             "    `$$($CommandName -replace '[\W\s]','') = `$executionContext.SessionState.InvokeCommand.GetCommand('$CommandName', 'All')"
@@ -215,8 +216,7 @@ $(@(
             '}'
             "`$$variableName"
 
-            ) -join [Environment]::NewLine
-            return
+            ) -join [Environment]::NewLine)
         }
 
         if (-not $VariableName) {  # Next, if no -VariableName was provided,
@@ -449,7 +449,7 @@ if (-not $Description) {
     $Description = "Calls $CommandName, using splatting"
 }
 
-"function $FunctionName
+[ScriptBlock]::Create("function $FunctionName
 {
     <#
     .Synopsis
@@ -480,10 +480,10 @@ $(@(foreach ($line in $coreSplat -split ([Environment]::Newline)) {
 }) -join ([Environment]::NewLine))
     }
 }
-"
+")
 
         } else {
-            $coreSplat
+            [ScriptBlock]::Create($coreSplat)
         }
 
     }
