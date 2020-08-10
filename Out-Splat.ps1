@@ -167,7 +167,7 @@
                 $VariableName = "$($CommandName -replace '[\W\s]','')DynamicParameters" # default to ${CommandName}DynamicParameters
             }
             $safeCommandName = $($CommandName -replace '[\W\s]','')
-            
+
             return [ScriptBlock]::Create(@(
             "if (-not `$$VariableName) {
     `$$VariableName = [Management.Automation.RuntimeDefinedParameterDictionary]::new()"
