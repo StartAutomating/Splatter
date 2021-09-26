@@ -296,7 +296,7 @@ foreach (`$in in $(if ($inputParameter) { "'$($inputParameter -join "','")'" } e
             }
 
         if ($CrossStream) {
-            $cmdDef += " 2>&1"
+            $cmdDef += " *>&1"
         }
 
         if ($Where) {
