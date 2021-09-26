@@ -29,6 +29,13 @@ describe Splatter {
         it 'Will handle parameter aliases' {
             @{Pid = $PID}  | Get-Splat -Command Get-Process
         }
+        it 'Will handle piped input' {
+            Get-Process -Id $pid |
+                Get-Splat -Command Get-Process |
+                    Use-Splat Get-Process |
+                        Select-Object -ExpandProperty ID |
+                            Should -Be $pid
+        }
         it 'Can see if you can pass down $psBoundParameters' {
             function foo([int]$id,[string]$Message) {
                 $foundSplat = $PSBoundParameters | Get-Splat get-process
@@ -252,7 +259,7 @@ describe Splatter {
             if (${??@} -ne $null) {
                 throw '${??@} should be undefined'
             }
-            $embeddedSplatter.Length | should belessthan 15kb
+            $embeddedSplatter.Length | should belessthan 20kb
         }
     }
 
