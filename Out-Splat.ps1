@@ -167,7 +167,7 @@
                 $VariableName = "$($CommandName -replace '[\W\s]','')DynamicParameters" # default to ${CommandName}DynamicParameters
             }
             $safeCommandName = $($CommandName -replace '[\W\s]','')
-            
+
             return [ScriptBlock]::Create(@(
             "if (-not `$$VariableName) {
     `$$VariableName = [Management.Automation.RuntimeDefinedParameterDictionary]::new()"
@@ -296,7 +296,7 @@ foreach (`$in in $(if ($inputParameter) { "'$($inputParameter -join "','")'" } e
             }
 
         if ($CrossStream) {
-            $cmdDef += " 2>&1"
+            $cmdDef += " *>&1"
         }
 
         if ($Where) {
