@@ -1,10 +1,9 @@
 ﻿<div align='center'>
-<img src='Assets/Splatter.png' style='align:center' />
-<a href='https://github.com/StartAutomating/Splatter/actions/workflows/TestBuildAndPublish.yml'>
-<img src='https://github.com/StartAutomating/Splatter/actions/workflows/TestBuildAndPublish.yml/badge.svg' style='align:center' />
-</a>
+<img src='Assets/Splatter-16x9.png' style='align:center' />
 <h1>Simple Scripts to Supercharge Splatting</h1>
 </div>
+
+[![Test Build And Publish](https://github.com/StartAutomating/Splatter/actions/workflows/TestBuildAndPublish.yml/badge.svg)](https://github.com/StartAutomating/Splatter/actions/workflows/TestBuildAndPublish.yml)
 
 ## Splatter is a simple Splatting toolkit
 
