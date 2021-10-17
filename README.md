@@ -179,14 +179,14 @@ If you don't need all of the commands, you can use -Verb
 
 ### Generating Splatting Code
 
-You can use Out-Splatter to generate code that splats.
+You can use Out-Splat to generate code that splats.
 
-    Out-Splatter -CommandName Get-Command -DefaultParameter @{Module='Splatter';CommandType='Alias'} | Invoke-Expression
+    Out-Splat -CommandName Get-Command -DefaultParameter @{Module='Splatter';CommandType='Alias'} | Invoke-Expression
 
 You can use also use Out-Splatter to generate whole functions, including help.
 
     $scriptBlock = 
-        Out-Splatter -FunctionName Get-SplatterAlias -CommandName Get-Command -DefaultParameter @{
+        Out-Splat -FunctionName Get-SplatterAlias -CommandName Get-Command -DefaultParameter @{
             Module='Splatter';CommandType='Alias'
         } -ExcludeParameter * -Synopsis 'Gets Splatter Aliases' -Description 'Gets aliases from the module Splatter'
     . ([ScriptBlock]::Create($scriptBlock))
