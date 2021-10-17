@@ -1,7 +1,7 @@
 ﻿<div align='center'>
-<img src='Assets/Splatter.png' />
+<img src='Assets/Splatter.png' style='align:center' />
 <a href='https://github.com/StartAutomating/Splatter/actions/workflows/TestBuildAndPublish.yml'>
-<img src='https://github.com/StartAutomating/Splatter/actions/workflows/TestBuildAndPublish.yml/badge.svg' />
+<img src='https://github.com/StartAutomating/Splatter/actions/workflows/TestBuildAndPublish.yml/badge.svg' style='align:center' />
 </a>
 <h1>Simple Scripts to Supercharge Splatting</h1>
 </div>
