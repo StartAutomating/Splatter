@@ -12,10 +12,12 @@
         PSData = @{
             ProjectURI = 'https://github.com/StartAutomating/Splatter'
             LicenseURI = 'https://github.com/StartAutomating/Splatter/blob/master/LICENSE'
+            IconURI    = 'https://raw.githubusercontent.com/StartAutomating/Splatter/master/Assets/Splatter.png'
             Tags = 'Splatting'
             ReleaseNotes = @'
 ### 0.5.3:
 * Out-Splat now supports -Examples, -Links, -Notes, and -OutputTypes (Issue #9)
+* Adding logo
 * Documentation updates.
 
 ### 0.5.2:
