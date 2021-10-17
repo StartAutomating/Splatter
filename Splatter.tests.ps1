@@ -4,13 +4,13 @@ describe Splatter {
     context 'Get-Splat makes splatting more gettable' {
         it 'Will Find Matching Parameters for a Command' {
             $splatOut = @{id = $pid;Foo='bar'} | Get-Splat -Command Get-Process
-            $splatOut.Keys.Count | should be 1
+            $splatOut.Keys.Count | should -Be 1
         }
         it 'Will remove invalid input' {
             @{id = $pid;Timeout=65kb} |
                 Get-Splat -Command Wait-Process |
                 Select-Object -ExpandProperty Count |
-                should be 1
+                should -Be 1
 
             @{id="blah"} | Get-Splat -Command Get-Process
         }
@@ -43,7 +43,7 @@ describe Splatter {
             }
 
             (foo -id $pid).id|
-                should be $pid
+                should -Be $pid
         }
     }
 
@@ -65,7 +65,7 @@ describe Splatter {
         it '*@ merges splats' {
             @{a='b'}|
                 Merge-Splat -Add @{c='d'} |
-                Select-Object -ExpandProperty Keys | should be a,c
+                Select-Object -ExpandProperty Keys | should -Be a,c
         }
 
         it '.@ (Use-Splat)' {
@@ -80,7 +80,7 @@ describe Splatter {
             $splat =@{Message='hi'}
             $splat | Use-Splat {
                 param([Parameter(Mandatory=$true)][string]$Message) $Message
-            } | should be hi
+            } | should -Be hi
         }
 
         it 'Can find matching scripts for a piece of data' {
@@ -108,17 +108,17 @@ describe Splatter {
                 Get-Splat $Fruit,$vegetable
             $matchedSplat |
                 Select-Object -ExpandProperty Command |
-                should be $Fruit
+                should -Be $Fruit
 
-            $matchedSplat | Use-Splat | should be 'apricot is a fruit'
+            $matchedSplat | Use-Splat | should -Be 'apricot is a fruit'
         }
 
         it 'Can pass additional arguments' {
             $2Splat = @{}  | Get-Splat {$args}
             $123 = $2Splat | Use-Splat -ArgumentList 1,2,3
             $Another123 = @{} | Use-Splat {$args} 1 2 3
-            $123 | should be 1,2,3
-            $Another123 | should be 1,2,3
+            $123 | should -Be 1,2,3
+            $Another123 | should -Be 1,2,3
         }
     }
 
@@ -127,7 +127,7 @@ describe Splatter {
             @{a='b'}|
                 Merge-Splat -Add @{c='d'} |
                 Select-Object -ExpandProperty Keys |
-                should be a,c
+                should -Be a,c
 
         }
         it 'Is easy to remove keys from a Splat' {
@@ -140,7 +140,7 @@ describe Splatter {
             @{a='b'} | Merge-Splat -Map @{a='b',@{c='d'},{@{e='f'}}} |
             Select-Object -ExpandProperty Keys |
             Sort-Object |
-            should be a,b,c,e
+            should -Be a,b,c,e
         }
 
         it 'Can -Map back objects,if a key was found' {
@@ -153,30 +153,30 @@ describe Splatter {
             @{a='b';"c$(Get-Random)"='d'} |
                 Merge-Splat -Exclude c* |
                 Select-Object -ExpandProperty Keys |
-                should be a
+                should -Be a
         }
 
         it 'Can -Include Keys' {
             @{a='b';"c$(Get-Random)"='d'} |
                 Merge-Splat -Include c* |
                 Select-Object -ExpandProperty Keys |
-                should belike c*
+                should -Belike c*
         }
 
         it 'Will squish collisions' {
             $merged = @{a='b'},[Ordered]@{a='a';b='b';c='c'} | Merge-Splat
-            $merged.keys | should be a,b,c
-            $merged.a | should be b,a
+            $merged.keys | should -Be a,b,c
+            $merged.a | should -Be b,a
         }
         it 'If passed -Keep, it will Keep the first one' {
             $merged = @{a='b'},[Ordered]@{a='a';b='b';c='c'} | Merge-Splat -Keep
-            $merged.keys | should be a,b,c
-            $merged.a | should be b
+            $merged.keys | should -Be a,b,c
+            $merged.a | should -Be b
         }
         it 'If passed -Replace, it will Replace collisions with new items' {
             $merged = @{a='b'},[Ordered]@{a='a';b='b';c='c'} | Merge-Splat -Replace
-            $merged.keys | should be a,b,c
-            $merged.a | should be a
+            $merged.keys | should -Be a,b,c
+            $merged.a | should -Be a
         }
     }
 
@@ -219,7 +219,7 @@ describe Splatter {
             }
 
             (foo -id $pid).id|
-                should be $pid
+                should -Be $pid
         }
     }
 
@@ -232,21 +232,21 @@ describe Splatter {
                 throw 'Splatter failed to embed'
             }
             $splatterModule = Get-Module Splatter
-            ${.@} | should not be $splatterModule.ExportedVariables['.@']
+            ${.@} | should -Not -Be $splatterModule.ExportedVariables['.@']
             @{id=$pid} | & ${.@} gps
         }
 
         it 'is pretty small' {
             $embeddedSplatter = Initialize-Splatter
-            $embeddedSplatter.Length | should belessthan 30kb
+            $embeddedSplatter.Length | should -Belessthan 30kb
         }
 
-        it 'can be minified and compressed' {
+        it 'can -Be minified and compressed' {
             $embeddedSplatter = Initialize-Splatter -Minify -Compress
-            $embeddedSplatter.Length | should belessthan 10kb
+            $embeddedSplatter.Length | should -Belessthan 10kb
         }
 
-        it 'Can be embedded as a functionl' {
+        it 'Can -Be embedded as a functionl' {
             $embeddedSplatter = Initialize-Splatter -Verb Get
             . ([ScriptBlock]::Create($embeddedSplatter))
         }
@@ -257,9 +257,9 @@ describe Splatter {
             . ([ScriptBlock]::Create($embeddedSplatter))
 
             if (${??@} -ne $null) {
-                throw '${??@} should be undefined'
+                throw '${??@} should -Be undefined'
             }
-            $embeddedSplatter.Length | should belessthan 20kb
+            $embeddedSplatter.Length | should -Belessthan 20kb
         }
     }
 
@@ -267,7 +267,7 @@ describe Splatter {
         it 'Can write you a splatting script' {
             $splatScript = Out-Splat -CommandName Get-Command -DefaultParameter @{Module='Splatter';CommandType='Alias'}
 
-            $splatScript| should belike '*Get-Command*@*'
+            $splatScript| should -Belike '*Get-Command*@*'
         }
         it 'Can write you a splating function' {
             $splatFunction =
@@ -275,11 +275,19 @@ describe Splatter {
                     Module='Splatter';CommandType='Alias'
                 } -ExcludeParameter * -Synopsis 'Gets Splatter Aliases' -Description 'Gets aliases from the module Splatter'
 
-            $splatFunction | should belike '*function Get-SplatterAlias*{*Get-Command*@*'
+            $splatFunction | should -Belike '*function Get-SplatterAlias*{*Get-Command*@*'
+        }
+
+        it 'Can write -Examples' {
+            $splatFunction =
+                Out-Splat -FunctionName Get-SplatterAlias -CommandName Get-Command -DefaultParameter @{
+                    Module='Splatter';CommandType='Alias'
+                } -ExcludeParameter * -Synopsis 'Gets Splatter Aliases' -Description 'Gets aliases from the module Splatter' -Example 'Get-SplatterAlias' 
+            $splatFunction | should -Belike '*.Example*Get-SplatterAlias*'
         }
     }
 
-    context 'Splatter can be smart about pipelines' {
+    context 'Splatter can -Be smart about pipelines' {
         it 'Can determine which parameters can pipe' {
             $r =
                 @{Foo='Bar';Baz='Bing'} |
@@ -291,8 +299,8 @@ describe Splatter {
                     $baz
                     )
                 }
-            $r.PipelineParameter.Keys | should be foo
-            $r.NonPipelineParameter.Keys | should be baz
+            $r.PipelineParameter.Keys | should -Be foo
+            $r.NonPipelineParameter.Keys | should -Be baz
         }
 
         it 'Can -Stream splats' {
@@ -306,29 +314,29 @@ describe Splatter {
 
                         $baz
                         )
-                        begin { $baz }
+                        Begin { $baz }
                         process { $foo }
-                    } -Stream | should be bing,bar,foo
+                    } -Stream | should -Be bing,bar,foo
         }
     }
 
-    context 'Splatter tries to be fault-tolerant' {
+    context 'Splatter tries to -Be fault-tolerant' {
         it 'Will complain if Use-Splat is not provided with a -Command' {
             $problem = $null
             @{aSplat='IMadeMySelf'} | Use-Splat -ErrorAction SilentlyContinue -ErrorVariable Problem
 
-            if (-not $Problem) { throw "There should hae been a problem" }
+            if (-not $Problem) { throw "There should hae -Been a problem" }
 
         }
 
         it 'Will output properties containing invalid parameters' {
             $o = @{Date='akllaksjasklj'} | Get-Splat Get-Date -Force
-            $o.Invalid.keys | should be Date
+            $o.Invalid.keys | should -Be Date
         }
 
-        it 'Will mark parameters that could not be turned into a ScriptBlock as invalid' {
+        it 'Will mark parameters that could not -Be turned into a ScriptBlock as invalid' {
             $o = @{Command='{"hi"'} | Get-Splat Invoke-Command -Force
-            $o.Invalid.keys | should be Command
+            $o.Invalid.keys | should -Be Command
         }
 
     }
