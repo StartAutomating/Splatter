@@ -9,6 +9,10 @@
         Initialize-Splatter
     .Example
         Out-Splat -CommandName Get-Command
+    .Example
+        Out-Splat -FunctionName Get-MyProcess -Example Get-MyProcess -CommandName Get-Process -DefaultParameter @{
+            Id = '$pid'
+        } -ExcludeParameter * 
     #>
     [CmdletBinding(DefaultParameterSetName='JustTheSplatter')]
     [OutputType([ScriptBlock])]
@@ -84,10 +88,38 @@
     [string]
     $Description,
 
+    # One or more examples.
+    # This is used to make comment-based help in a generated function.
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
+    [Alias('Examples')]
+    [string[]]
+    $Example,
+
+    # One or more links.
+    # This is used to make comment-based help in a generated function.
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
+    [Alias('Links')]
+    [string[]]
+    $Link,
+
+    # Some notes.
+    # This is used to make comment-based help in a generated function.
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
+    [Alias('Notes')]
+    [string]
+    $Note,
+
     # The CmdletBinding attribute for a new function
     [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
     [string]
     $CmdletBinding,
+
+    # The [OutputType()] of a function.  
+    # If the type resolves to a [type], it's value will be provided as a [type].  
+    # Otherwise, it will be provided as a [string]
+    [Parameter(ValueFromPipelineByPropertyName,ParameterSetName='FunctionalSplatter')]
+    [string[]]
+    $OutputType,
 
     # A set of additional parameter declarations.
     # The keys are the names of the parameters, and the values can be a type and a string containing parameter binding and inline help.
@@ -441,13 +473,48 @@ $parameterHelp
             $paramBlock = $paramBlockParts -join (',' + ([Environment]::NewLine * 2))
 
 
-if (-not $Synopsis) {
-    $Synopsis = "Wraps $CommandName"
-}
+            if (-not $Synopsis) {
+                $Synopsis = "Wraps $CommandName"
+            }
 
-if (-not $Description) {
-    $Description = "Calls $CommandName, using splatting"
-}
+            if (-not $Description) {
+                $Description = "Calls $CommandName, using splatting"
+            }
+
+            $exampleText =
+                if ($Example) {   
+                    @(foreach ($ex in $Example) {
+                        "    .Example"
+                        foreach ($ln in $ex -split '(?>\r\n|\n)') {
+                            "        $ln"
+                        }
+                    }) -join [Environment]::NewLine
+                } else { ''}
+            
+            $noteText =
+                if ($Note) {   
+                    @(
+                        "    .Notes"
+                        foreach ($ln in $Note -split '(?>\r\n|\n)') {
+                            "        $ln"
+                        }
+                    ) -join [Environment]::NewLine
+                } else { ''}
+             
+
+
+            $linkText = 
+                if ($Link) {
+                    @(foreach ($lnk in $Link) {
+                    "    .Link"
+                    "        $lnk"        
+                    }) -join [Environment]::NewLine
+                } else { @"
+    .Link
+        $CommandName
+"@
+                }
+            
 
 [ScriptBlock]::Create("function $FunctionName
 {
@@ -455,9 +522,13 @@ if (-not $Description) {
     .Synopsis
         $Synopsis
     .Description
-        $Description
-    .Link
-        $CommandName
+        $Description$(
+        if ($exampleText) { [Environment]::NewLine + $exampleText}
+        )$(
+            if ($linkText) { [Environment]::NewLine + $linkText}
+        )$(
+            if ($NoteText) { [Environment]::NewLine + $noteText}            
+        )
     #>$(if ($CmdletBinding) {
         if ($CmdletBinding -like "*CmdletBinding*") {
             [Environment]::NewLine + (' '*4) + $CmdletBinding
@@ -466,9 +537,18 @@ if (-not $Description) {
         }
         } elseif ($originalCmdletBinding) {
             [Environment]::NewLine + (' '*4) + $originalCmdletBinding
-        })
+        })$(
+        if ($OutputType) {
+            [Environment]::NewLine + (' '*4) + '[OutputType(' + @(foreach ($ot in $outputtype) {
+                if ($ot -as [type]) {"[$ot]"} else { "'$ot'"}
+            }) -join ',' + ')]'
+        } else {
+            [Environment]::NewLine + (' '*4) + '[OutputType([PSObject])]'
+        }
+        )
     param(
-$paramBlock)
+$paramBlock
+    )
 
     process {
 $(@(foreach ($line in $coreSplat -split ([Environment]::Newline)) {
