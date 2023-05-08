@@ -589,4 +589,7 @@ jobs:
       - name: Run HelpOut
         uses: StartAutomating/HelpOut@master
         id: HelpOut
+      - name: Run PSMinifier
+        uses: StartAutomating/PSMinifier@master
+        id: PSMinifier
 
