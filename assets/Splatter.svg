@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 300 100" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="psChevron" viewBox="0 0 100 100" preserveAspectRatio="False">
+    <polygon points="40,20 45,20 60,50 35,80 32.5,80 55,50" />
+  </symbol>
+  <use href="#psChevron" fill="#b00707" height="5%" y="47%" x="-1.5%" />
+  <style type="text/css">@import url('https://fonts.googleapis.com/css?family=Dancing Script')</style>
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" style="font-family: 'Dancing Script', sans-serif" fill="#b00707" class="foreground-fill" font-size="4em" font-weight="500">
+    <tspan font-size=".5em">spl@tter</tspan>
+  </text>
+</svg>
