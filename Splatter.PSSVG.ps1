@@ -12,7 +12,7 @@ $psChevron =
         ) -join ' ')
     ) -ViewBox 100, 100 -PreserveAspectRatio $false
 
-$assetsPath = Join-Path $PSScriptRoot assets
+$assetsPath = Join-Path $PSScriptRoot Assets
 
 if (-not (Test-Path $assetsPath)) {
     $null = New-item -ItemType Directory -Path $assetsPath
