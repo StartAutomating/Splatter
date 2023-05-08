@@ -24,7 +24,7 @@ svg -ViewBox 300, 100 @(
     svg.use -Href '#psChevron' -Fill '#b00707' -Height 5% -Y 47% -X -1.5% 
     SVG.GoogleFont -FontName $FontName
     
-    svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', sans-serif" -Fill '#b00707' -Class 'foreground-fill' -Content @(
+    svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', cursive" -Fill '#b00707' -Class 'foreground-fill' -Content @(
         SVG.tspan -FontSize .5em -Content 'spl@tter'
         # SVG.tspan -FontSize 1em -Content 'git' -Dx -.25em
     ) -FontSize 4em -FontWeight 500
@@ -35,7 +35,7 @@ svg -ViewBox 1920, 1080 @(
     svg.use -Href '#psChevron' -Fill '#b00707' -Height 10% -Y 43% -X -5% 
     SVG.GoogleFont -FontName $FontName
     
-    svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', sans-serif" -Fill '#b00707' -Class 'foreground-fill' -Content @(
+    svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', cursive" -Fill '#b00707' -Class 'foreground-fill' -Content @(
         SVG.tspan -FontSize .5em -Content 'spl@tter'
         # SVG.tspan -FontSize 1em -Content 'git' -Dx -.25em
     ) -FontSize 90em -FontWeight 500
@@ -52,7 +52,7 @@ svg -ViewBox 1920, 1080 @(
     svg.use -Href '#psChevron' -Fill '#b00707' -Height 10% -Y 43% -X -5% 
     SVG.GoogleFont -FontName $FontName
              
-    svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', sans-serif; " -Fill '#b00707' -Class 'foreground-fill' -Content @(
+    svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', cursive; " -Fill '#b00707' -Class 'foreground-fill' -Content @(
         SVG.tspan -FontSize .5em -Content 'spl@tter'
         # SVG.tspan -FontSize 1em -Content 'git' -Dx -.25em
         SVG.animate -AttributeName fill -dur 10s -Values '#b00707;#b01707;#ed2222;#b01707;#b00707' -RepeatCount indefinite
