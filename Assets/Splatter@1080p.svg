@@ -5,7 +5,7 @@
   </symbol>
   <use href="#psChevron" fill="#b00707" height="10%" y="43%" x="-5%" />
   <style type="text/css">@import url('https://fonts.googleapis.com/css?family=Dancing Script')</style>
-  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" style="font-family: 'Dancing Script', cursive" fill="#b00707" class="foreground-fill" font-size="90em" font-weight="500">
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" style="font-family: 'Dancing Script', cursive" fill="#b00707" class="foreground-fill" font-size="80em" font-weight="500">
     <tspan font-size=".5em">spl@tter</tspan>
   </text>
 </svg>
