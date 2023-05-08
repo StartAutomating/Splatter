@@ -40,10 +40,10 @@
         if (-not ${script:_@pp}) { ${script:_@pp} = @{} } # * All Pipelined Parameters
         $ValidateAttributes = {
             param(
-                [Parameter(Mandatory)]$value, 
+                [Parameter(Mandatory)]$value,
                 [Parameter(Mandatory)]$attributes
             )
-            
+
             foreach ($attr in $attributes) {
                 $_ = $this = $value
                 if ($attr -is [Management.Automation.ValidateScriptAttribute]) {
@@ -52,27 +52,23 @@
                         $attr
                     }
                 }
-                elseif ($attr -is [Management.Automation.ValidatePatternAttribute] -and 
+                elseif ($attr -is [Management.Automation.ValidatePatternAttribute] -and
                         (-not [Regex]::new($attr.RegexPattern, $attr.Options, '00:00:05').IsMatch($value))
                     ) { $attr }
-                elseif ($attr -is [Management.Automation.ValidateSetAttribute] -and 
+                elseif ($attr -is [Management.Automation.ValidateSetAttribute] -and
                         $attr.ValidValues -notcontains $value) { $attr }
                 elseif ($attr -is [Management.Automation.ValidateRangeAttribute] -and (
                     ($value -gt $attr.MaxRange) -or ($value -lt $attr.MinRange)
-                )) {$attr}                
+                )) {$attr}
             }
         }
     }
     process {
-        
+
         $ap,$ac,$amp = ${script:_@p},${script:_@c}, ${script:_@mp}
         #region Turn dictionaries into PSObjects
         if ($Splat -is [Collections.IDictionary]) {
-            if ($splat.GetType().Name -ne 'PSBoundParametersDictionary') {
-                $Splat = [PSCustomObject]$Splat
-            } else {
-                $splat = [PSCustomObject]([Ordered]@{} +  $Splat)
-            }
+            $splat = [PSCustomObject]([Ordered]@{} +  $Splat)
         }
         #endregion Turn dictionaries into PSObjects
 
@@ -113,15 +109,15 @@
                 foreach ($param in $cmd.Parameters.Values) {
                     foreach ($attr in $param.Attributes) {
                         if ($attr.ValueFromPipeline) {
-                            $param       
+                            $param
                         }
                     }
                 })
             }
-            
+
             $cmdMd = $cmd -as [Management.Automation.CommandMetaData]
             $problems = @(
-            
+
             foreach ($vfp in ${script:_@pp}.$cmd) {
                 if ($in -is $vfp.ParameterType -or
                     ($vfp.ParameterType.IsArray -and $in -as $vfp.ParameterType)
@@ -133,14 +129,14 @@
                     }
                     if (-not $badAttributes -or $Force) {
                         $null = $params.Add($vfp.Name)
-                        $pipe[$vfp.Name] = $v                        
+                        $pipe[$vfp.Name] = $v
                         $outSplat[$vfp.Name] = $v
                         $paramMap[$vfp.Name] = $vfp.Name
-                        $pipelineParameterSets = 
-                            @(foreach ($attr in $vfp.Attributes) { 
+                        $pipelineParameterSets =
+                            @(foreach ($attr in $vfp.Attributes) {
                                 if ($attr.ParameterSetName) { $attr.ParameterSetName}
                             })
-                    } 
+                    }
                 }
             }
 
@@ -165,14 +161,14 @@
                         }
                 }
 
-                if (-not $param) {                    
+                if (-not $param) {
                     $pn
-                    continue                    
+                    continue
                 }
                 $paramMap[$param.Name] = $pn
                 if ($params -contains $param) { continue }
                 $pt=$param.ParameterType
-                $paramSets = 
+                $paramSets =
                     @(foreach ($attr in $param.Attributes) {
                         if ($attr.ParameterSetName) { $attr.ParameterSetName }
                     })
@@ -200,10 +196,10 @@
                     if ($nv -is [PSVariable] -or $Force) {
                         $null = $params.Add($param)
                         :CanItPipe do {
-                            foreach ($attr in $param.Attributes) {                                
-                                if ($attr.ValueFromPipeline -or $attr.ValueFromPipelineByPropertyName -and 
+                            foreach ($attr in $param.Attributes) {
+                                if ($attr.ValueFromPipeline -or $attr.ValueFromPipelineByPropertyName -and
                                     ((-not $pipelineParameterSets) -or ($pipelineParameterSets -contains $attr.ParameterSetName))
-                                ) {                                    
+                                ) {
                                     $pipe[$prop.Name] = $v
                                     break CanItPipe
                                 }
@@ -219,17 +215,17 @@
                 }
             })
 
-            
+
             $Mandatory = @{}
-            
+
             foreach ($param in $cmdMd.Parameters.Values) {
                 foreach ($a in $param.Attributes) {
                     if (-not $a.Mandatory) { continue }
                     if ($a -isnot [Management.Automation.ParameterAttribute]) { continue }
                     if (-not $Mandatory[$a.ParameterSetName]) { $Mandatory[$a.ParameterSetName] = [Ordered]@{} }
                     $mp = ($paramMap.($param.Name))
-                    $Mandatory[$a.ParameterSetName].($param.Name) = 
-                        if ($mp) { 
+                    $Mandatory[$a.ParameterSetName].($param.Name) =
+                        if ($mp) {
                             if ($pipelineParameterName -contains $param.Name) {
                                 $in
                             } else {
@@ -238,8 +234,8 @@
                         }
                 }
             }
-            $amp.$cmd = $Mandatory            
-            
+            $amp.$cmd = $Mandatory
+
             $mandatory = $amp.$cmd
 
             $missingMandatory = @{}
