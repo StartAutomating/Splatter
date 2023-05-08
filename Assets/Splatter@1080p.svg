@@ -3,7 +3,7 @@
   <symbol id="psChevron" viewBox="0 0 100 100" preserveAspectRatio="False">
     <polygon points="40,20 45,20 60,50 35,80 32.5,80 55,50" />
   </symbol>
-  <use href="#psChevron" fill="#b00707" height="10%" y="43%" x="-5%" />
+  <use href="#psChevron" fill="#b00707" height="10%" y="43%" x="-4.5%" />
   <style type="text/css">@import url('https://fonts.googleapis.com/css?family=Dancing Script')</style>
   <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" style="font-family: 'Dancing Script', cursive" fill="#b00707" class="foreground-fill" font-size="80em" font-weight="500">
     <tspan font-size=".5em">spl@tter</tspan>
