@@ -32,7 +32,7 @@ svg -ViewBox 300, 100 @(
 
 svg -ViewBox 1920, 1080 @(
     $psChevron
-    svg.use -Href '#psChevron' -Fill '#b00707' -Height 10% -Y 43% -X -5% 
+    svg.use -Href '#psChevron' -Fill '#b00707' -Height 10% -Y 43% -X -4.5% 
     SVG.GoogleFont -FontName $FontName
     
     svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', cursive" -Fill '#b00707' -Class 'foreground-fill' -Content @(
@@ -49,7 +49,7 @@ $AnimationTimeframe = [Ordered]@{
 
 svg -ViewBox 1920, 1080 @(
     $psChevron
-    svg.use -Href '#psChevron' -Fill '#b00707' -Height 10% -Y 43% -X -5% 
+    svg.use -Href '#psChevron' -Fill '#b00707' -Height 10% -Y 43% -X -4.5% 
     SVG.GoogleFont -FontName $FontName
              
     svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', cursive; " -Fill '#b00707' -Class 'foreground-fill' -Content @(
