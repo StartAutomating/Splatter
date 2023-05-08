@@ -38,7 +38,7 @@ svg -ViewBox 1920, 1080 @(
     svg.text -X 50% -Y 50% -TextAnchor 'middle' -DominantBaseline 'middle' -Style "font-family: '$FontName', cursive" -Fill '#b00707' -Class 'foreground-fill' -Content @(
         SVG.tspan -FontSize .5em -Content 'spl@tter'
         # SVG.tspan -FontSize 1em -Content 'git' -Dx -.25em
-    ) -FontSize 90em -FontWeight 500
+    ) -FontSize 80em -FontWeight 500
 ) -OutputPath (Join-Path $assetsPath 'Splatter@1080p.svg')
 
 
@@ -56,6 +56,6 @@ svg -ViewBox 1920, 1080 @(
         SVG.tspan -FontSize .5em -Content 'spl@tter'
         # SVG.tspan -FontSize 1em -Content 'git' -Dx -.25em
         SVG.animate -AttributeName fill -dur 10s -Values '#b00707;#b01707;#ed2222;#b01707;#b00707' -RepeatCount indefinite
-    ) -FontSize 90em -FontWeight 500
+    ) -FontSize 80em -FontWeight 500
 ) -OutputPath (Join-Path $assetsPath 'Splatter@1080p-Animated.svg')
 
