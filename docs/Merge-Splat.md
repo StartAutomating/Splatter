@@ -187,6 +187,10 @@ If the value is a ScriptBlock, it will combine the output of this script block w
 
 #### **Keep**
 
+If set, will keep existing values in a splat instead of adding it to a list of values.
+
+
+
 
 
 
@@ -197,6 +201,10 @@ If the value is a ScriptBlock, it will combine the output of this script block w
 
 
 #### **Replace**
+
+If set, will replace existing values in a splat instead of adding it to a list of values.
+
+
 
 
 
