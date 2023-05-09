@@ -16,6 +16,7 @@
     .Example
         @{id=$pid} | & ${?@} # Get-Splat as a script block
     #>
+    [Alias('?@','gSplat')]
     param(
     # The command that is being splatted.
     [Parameter(Mandatory=$true,Position=0)]

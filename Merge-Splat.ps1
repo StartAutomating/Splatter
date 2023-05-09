@@ -29,15 +29,16 @@
                 }
             }
     #>
+    [Alias('*@','mSplat')]
     param(
     # The splat
-    [Parameter(ValueFromPipeline=$true)]
+    [Parameter(ValueFromPipeline)]
     [Alias('InputObject')]
     [PSObject[]]
     $Splat,
 
     # Splats or objects that will be added to the splat.
-    [Parameter(Position=0,ValueFromRemainingArguments=$true)]
+    [Parameter(Position=0,ValueFromRemainingArguments)]
     [Alias('With', 'W', 'A', '+')]
     [PSObject[]]
     $Add,
@@ -74,9 +75,11 @@
     [Collections.IDictionary]
     $Map,
 
+    # If set, will keep existing values in a splat instead of adding it to a list of values.
     [switch]
     $Keep,
 
+    # If set, will replace existing values in a splat instead of adding it to a list of values.
     [switch]
     $Replace)
 
@@ -155,11 +158,11 @@
         }
     }
     process {
-        $isTheEndOfTheLine? =
+        $isTheEndOfTheLine =
             $MyInvocation.PipelinePosition -eq $MyInvocation.PipelineLength
         if ($Splat) { $accumulate.AddRange($Splat) }
         if ($Add) { $accumulate.AddRange($add) }
-        if (-not $isTheEndOfTheLine?) {
+        if (-not $isTheEndOfTheLine) {
             . $imSplat
         }
     }
