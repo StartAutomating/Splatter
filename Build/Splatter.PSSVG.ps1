@@ -1,4 +1,6 @@
 #requires -Module PSSVG
+
+Push-Location ($PSScriptRoot | Split-Path)
    
 $psChevron = 
     svg.symbol -Id psChevron -Content @(
@@ -12,7 +14,7 @@ $psChevron =
         ) -join ' ')
     ) -ViewBox 100, 100 -PreserveAspectRatio $false
 
-$assetsPath = Join-Path $PSScriptRoot Assets
+$assetsPath = Join-Path $pwd Assets
 
 if (-not (Test-Path $assetsPath)) {
     $null = New-item -ItemType Directory -Path $assetsPath
@@ -59,3 +61,4 @@ svg -ViewBox 1920, 1080 @(
     ) -FontSize 80em -FontWeight 500
 ) -OutputPath (Join-Path $assetsPath 'Splatter@1080p-Animated.svg')
 
+Pop-Location
