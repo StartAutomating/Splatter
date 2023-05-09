@@ -1,4 +1,4 @@
-﻿<div align='center'>
+<div align='center'>
 <img src='Assets/Splatter.png' style='align:center' />
 <h1>Simple Scripts to Supercharge Splatting</h1>
 </div>

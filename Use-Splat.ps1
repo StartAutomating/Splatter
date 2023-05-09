@@ -23,6 +23,7 @@
         @{LogName='Application';InstanceId=10000,10005} |
             .@ Get-EventLog # get a bunch of different log events
     #>
+    [Alias('.@','uSplat')]
     param(
     # One or more commands
     [Parameter(Position=0)]
@@ -30,7 +31,7 @@
     $Command,
 
     # Any additional positional arguments that would be passed to the command
-    [Parameter(Position=1,ValueFromRemainingArguments=$true)]
+    [Parameter(Position=1,ValueFromRemainingArguments)]
     [PSObject[]]
     $ArgumentList = @(),
 
@@ -57,7 +58,7 @@
     $Stream)
 
     begin {
-        $pipelines = @{}
+        $pipelines = @{}        
     }
     process {
         $WeTrustTheSplat = $false

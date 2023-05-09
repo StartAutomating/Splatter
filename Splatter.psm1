@@ -8,17 +8,7 @@ param()
 
 . $psScriptRoot\Initialize-Splatter.ps1
 
-# ?@ Get the splat for a given command.
-Set-Alias -Name '?@' -Value Get-Splat
-Set-Alias -Name 'gSplat' -Value Get-Splat
-Set-Alias -Name '??@' -Value Find-Splat
-Set-Alias -Name 'fSplat' -Value Find-Splat
-Set-Alias -Name '.@' -Value Use-Splat
-Set-Alias -Name 'uSplat' -Value Use-Splat
-Set-Alias -Name '*@' -Value Merge-Splat
-Set-Alias -Name 'mSplat' -Value Merge-Splat
-Set-Alias -Name '=>@' -Value Out-Splat
-
+# Assign each splatter command to a variable for easy internal access
 ${?@} = $gSplat = $GetSplat = ${function:Get-Splat}
 ${??@} = $fSplat = $FindSplat = ${function:Find-Splat}
 ${*@} = $mSplat = $MergeSplat = ${function:Merge-Splat}

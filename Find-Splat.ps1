@@ -12,6 +12,7 @@
     .Example
         @{Id=$pid} | Find-Splat -Global
     #>
+    [Alias('??@','fSplat')]
     param(
     # One or more commands.
     # If not provided, commands from the current module will be searched.

@@ -15,6 +15,7 @@
         } -ExcludeParameter * 
     #>
     [CmdletBinding(DefaultParameterSetName='JustTheSplatter')]
+    [Alias('=>@','oSplat')]
     [OutputType([ScriptBlock])]
     param(
     # The name of the command that will be splatted
