@@ -176,7 +176,12 @@
     # This assumes that the first item in the script block is a command, and it will accept the output of the splat as pipelined input
     [ScriptBlock]
     [Alias('PipeInto','Pipe')]
-    $PipeTo)
+    $PipeTo,
+    
+    # The output path.
+    # If provided, will output to this file and return the file.
+    [string]
+    $OutputPath)
 
     process {
         # First, let's find the command.
@@ -355,167 +360,168 @@ foreach (`$in in $(if ($inputParameter) { "'$($inputParameter -join "','")'" } e
         $coreSplat = (@() + $defaultDeclaration + $paramSplat + $cmdDef) -join ([Environment]::NewLine)
 
 
-        if ($FunctionName) {
-            $commandMeta = $commandExists -as [Management.Automation.CommandMetadata]
+        $SplatterScript = 
+            if ($FunctionName) {
+                $commandMeta = $commandExists -as [Management.Automation.CommandMetadata]
 
-            foreach ($k in @($commandMeta.Parameters.Keys)) {
-                if ($InputParameter -notcontains $k) {
-                    $null =$commandMeta.Parameters.Remove($k)
+                foreach ($k in @($commandMeta.Parameters.Keys)) {
+                    if ($InputParameter -notcontains $k) {
+                        $null =$commandMeta.Parameters.Remove($k)
+                    }
                 }
-            }
-            $originalCmdletBinding = [Management.Automation.Proxycommand]::GetCmdletBindingAttribute($commandExists)
-            $cmdHelp = Get-Help -Name $commandExists
-            if ($cmdHelp -is [string]) { $cmdHelp = $null }
-            $paramBlock = [Management.Automation.Proxycommand]::GetParamBlock($commandExists) -replace '\{(\S{1,})\}', '$1'
+                $originalCmdletBinding = [Management.Automation.Proxycommand]::GetCmdletBindingAttribute($commandExists)
+                $cmdHelp = Get-Help -Name $commandExists
+                if ($cmdHelp -is [string]) { $cmdHelp = $null }
+                $paramBlock = [Management.Automation.Proxycommand]::GetParamBlock($commandExists) -replace '\{(\S{1,})\}', '$1'
 
-            $paramParts = $paramBlock -split ',\W{1,}[\[$]' -ne ''
+                $paramParts = $paramBlock -split ',\W{1,}[\[$]' -ne ''
 
-            $paramBlockParts =
-            @(foreach ($param in $paramParts) {
-                $lastDollar = $param.LastIndexOf('$')
-                $parameterName = $param.Substring($lastDollar + 1).Trim()
-                $parameterHelp = if ($cmdHelp) {
-                    $cmdHelp.parameters[0].parameter |
-                        Where-Object { $_.Name -eq $parameterName -and $_.Description }|
-                        Select-Object -ExpandProperty Description |
-                        Select-Object -ExpandProperty Text
-                } else {
-                    $null
-                }
-
-                $param = $param.Trim()
-                if (-not $param.StartsWith('$') -and -not $param.StartsWith('[')) {
-                    $param = "[$param"
-                }
-
-                if ($ExcludeParameter) {
-                    $shouldExclude =
-                        foreach ($ex in $ExcludeParameter) {
-                            if ($parameterName -like "$ex") {
-                                $true
-                                break
-                            }
-                        }
-
-                    if ($shouldExclude) { continue }
-                }
-
-                if ($parameterHelp) {
-                    $lines = "$parameterHelp".Split("`r`n",[StringSplitOptions]'RemoveEmptyEntries')
-                    if ($lines.Count -lt 8) {
-                        (@(foreach ($l in $lines) {
-"    #$l"
-                        }) -join ([Environment]::NewLine)) +
-                        ([Environment]::NewLine) + (' '*4) + $param
+                $paramBlockParts =
+                @(foreach ($param in $paramParts) {
+                    $lastDollar = $param.LastIndexOf('$')
+                    $parameterName = $param.Substring($lastDollar + 1).Trim()
+                    $parameterHelp = if ($cmdHelp) {
+                        $cmdHelp.parameters[0].parameter |
+                            Where-Object { $_.Name -eq $parameterName -and $_.Description }|
+                            Select-Object -ExpandProperty Description |
+                            Select-Object -ExpandProperty Text
                     } else {
-"    <#
-$parameterHelp
-    #>
-    $param"
+                        $null
                     }
-                } else {
-                    $param
-                }
-            })
 
-            if ($AdditionalParameter) {
-                foreach ($kv in $AdditionalParameter.GetEnumerator()) {
-                    $varName = if ($kv.Key.StartsWith('$')) { $kv.Key } else { '$' + $kv.Key }
-
-                    $newParamBlockPart =
-                    if ($kv.Value -is [type]) {
-                        if ($kv.Value.FullName -like "System.*") {
-                            "    [$($kv.Value.Fullname.Substring(7))]$varName"
-                        } elseif ($kv.Value -eq [switch]) {
-                            "    [switch]$varName"
-                        } else {
-                            "    [$($kv.Value.Fullname)]$varName"
-                        }
+                    $param = $param.Trim()
+                    if (-not $param.StartsWith('$') -and -not $param.StartsWith('[')) {
+                        $param = "[$param"
                     }
-                    elseif ($kv.Value -is [string]) {
-                        $varDeclared = $false
-                        $newLines =
-                            foreach ($line in $kv.Value -split [Environment]::NewLine) {
-                                $trimLine = $Line.Trim()
-                                if ($trimLine.StartsWith('[')) {
-                                    if ($trimLine -like $varName) {
-                                        $varDeclared = $true
-                                    }
-                                    (' ' * 4) + $trimLine
-                                } # It's an attribute!
-                                elseif ($trimLine.StartsWith('$')) { # It's a variable!
-                                    $varDeclared = $true
-                                    (' ' * 4) + $trimLine
-                                }
-                                elseif ($trimLine.StartsWith('#'))  { # It's a comment!
-                                    (' ' * 4) + $trimLine
-                                }
-                                else {                                # Otherwise, we'll treat it like a comment anyways
-                                    (' ' * 4)  + '#' + $trimLine
+
+                    if ($ExcludeParameter) {
+                        $shouldExclude =
+                            foreach ($ex in $ExcludeParameter) {
+                                if ($parameterName -like "$ex") {
+                                    $true
+                                    break
                                 }
                             }
 
-                        if (-not $varDeclared) {
-                            $newLines += (' ' * 4) + $varName
+                        if ($shouldExclude) { continue }
+                    }
+
+                    if ($parameterHelp) {
+                        $lines = "$parameterHelp".Split("`r`n",[StringSplitOptions]'RemoveEmptyEntries')
+                        if ($lines.Count -lt 8) {
+                            (@(foreach ($l in $lines) {
+    "    #$l"
+                            }) -join ([Environment]::NewLine)) +
+                            ([Environment]::NewLine) + (' '*4) + $param
+                        } else {
+    "    <#
+    $parameterHelp
+        #>
+        $param"
                         }
-                        $newLines -join ([Environment]::NewLine)
+                    } else {
+                        $param
                     }
-                    elseif ($kv.Value -is [Object[]]) {
+                })
 
-                    }
+                if ($AdditionalParameter) {
+                    foreach ($kv in $AdditionalParameter.GetEnumerator()) {
+                        $varName = if ($kv.Key.StartsWith('$')) { $kv.Key } else { '$' + $kv.Key }
+
+                        $newParamBlockPart =
+                        if ($kv.Value -is [type]) {
+                            if ($kv.Value.FullName -like "System.*") {
+                                "    [$($kv.Value.Fullname.Substring(7))]$varName"
+                            } elseif ($kv.Value -eq [switch]) {
+                                "    [switch]$varName"
+                            } else {
+                                "    [$($kv.Value.Fullname)]$varName"
+                            }
+                        }
+                        elseif ($kv.Value -is [string]) {
+                            $varDeclared = $false
+                            $newLines =
+                                foreach ($line in $kv.Value -split [Environment]::NewLine) {
+                                    $trimLine = $Line.Trim()
+                                    if ($trimLine.StartsWith('[')) {
+                                        if ($trimLine -like $varName) {
+                                            $varDeclared = $true
+                                        }
+                                        (' ' * 4) + $trimLine
+                                    } # It's an attribute!
+                                    elseif ($trimLine.StartsWith('$')) { # It's a variable!
+                                        $varDeclared = $true
+                                        (' ' * 4) + $trimLine
+                                    }
+                                    elseif ($trimLine.StartsWith('#'))  { # It's a comment!
+                                        (' ' * 4) + $trimLine
+                                    }
+                                    else {                                # Otherwise, we'll treat it like a comment anyways
+                                        (' ' * 4)  + '#' + $trimLine
+                                    }
+                                }
+
+                            if (-not $varDeclared) {
+                                $newLines += (' ' * 4) + $varName
+                            }
+                            $newLines -join ([Environment]::NewLine)
+                        }
+                        elseif ($kv.Value -is [Object[]]) {
+
+                        }
 
 
-                    if ($newParamBlockPart) {
-                        $paramBlockParts += $newParamBlockPart
+                        if ($newParamBlockPart) {
+                            $paramBlockParts += $newParamBlockPart
+                        }
                     }
                 }
-            }
 
-            $paramBlock = $paramBlockParts -join (',' + ([Environment]::NewLine * 2))
-
-
-            if (-not $Synopsis) {
-                $Synopsis = "Wraps $CommandName"
-            }
-
-            if (-not $Description) {
-                $Description = "Calls $CommandName, using splatting"
-            }
-
-            $exampleText =
-                if ($Example) {   
-                    @(foreach ($ex in $Example) {
-                        "    .Example"
-                        foreach ($ln in $ex -split '(?>\r\n|\n)') {
-                            "        $ln"
-                        }
-                    }) -join [Environment]::NewLine
-                } else { ''}
-            
-            $noteText =
-                if ($Note) {   
-                    @(
-                        "    .Notes"
-                        foreach ($ln in $Note -split '(?>\r\n|\n)') {
-                            "        $ln"
-                        }
-                    ) -join [Environment]::NewLine
-                } else { ''}
-             
+                $paramBlock = $paramBlockParts -join (',' + ([Environment]::NewLine * 2))
 
 
-            $linkText = 
-                if ($Link) {
-                    @(foreach ($lnk in $Link) {
-                    "    .Link"
-                    "        $lnk"        
-                    }) -join [Environment]::NewLine
-                } else { @"
+                if (-not $Synopsis) {
+                    $Synopsis = "Wraps $CommandName"
+                }
+
+                if (-not $Description) {
+                    $Description = "Calls $CommandName, using splatting"
+                }
+
+                $exampleText =
+                    if ($Example) {   
+                        @(foreach ($ex in $Example) {
+                            "    .Example"
+                            foreach ($ln in $ex -split '(?>\r\n|\n)') {
+                                "        $ln"
+                            }
+                        }) -join [Environment]::NewLine
+                    } else { ''}
+                
+                $noteText =
+                    if ($Note) {   
+                        @(
+                            "    .Notes"
+                            foreach ($ln in $Note -split '(?>\r\n|\n)') {
+                                "        $ln"
+                            }
+                        ) -join [Environment]::NewLine
+                    } else { ''}
+                
+
+
+                $linkText = 
+                    if ($Link) {
+                        @(foreach ($lnk in $Link) {
+                        "    .Link"
+                        "        $lnk"        
+                        }) -join [Environment]::NewLine
+                    } else { @"
     .Link
         $CommandName
 "@
-                }
-            
+                    }
+                
 
 [ScriptBlock]::Create("function $FunctionName
 {
@@ -563,9 +569,19 @@ $(@(foreach ($line in $coreSplat -split ([Environment]::Newline)) {
 }
 ")
 
-        } else {
-            [ScriptBlock]::Create($coreSplat)
-        }
+            } else {
+                [ScriptBlock]::Create($coreSplat)
+            }
 
+        if ($outputPath) {
+            if (-not (Test-Path $outputPath)) {
+                $null = New-Item -ItemType File -Path $outputPath -Force
+            }
+            "$SplatterScript" | Set-Content -Path $outputPath
+            Get-Item -Path $outputPath
+        } else {
+            $SplatterScript
+        }
     }
 }
+
