@@ -203,7 +203,12 @@ param()'
             "$SplatterScript" | Set-Content -Path $outputPath
             Get-Item -Path $outputPath
         } else {
-            $SplatterScript
+            try {
+                [ScriptBlock]::Create($SplatterScript)
+            } catch {
+                Write-Debug "$($_ | Out-String)"
+                $SplatterScript
+            }
         }
 
         Write-Progress "Initialized!" " "  -Completed -id $id
