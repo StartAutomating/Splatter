@@ -489,6 +489,22 @@ This assumes that the first item in the script block is a command, and it will a
 
 
 
+#### **OutputPath**
+
+The output path.
+If provided, will output to this file and return the file.
+
+
+
+
+
+
+|Type      |Required|Position|PipelineInput|
+|----------|--------|--------|-------------|
+|`[String]`|false   |named   |false        |
+
+
+
 
 
 ---
@@ -507,11 +523,11 @@ This assumes that the first item in the script block is a command, and it will a
 
 ### Syntax
 ```PowerShell
-Out-Splat [-CommandName] <String> [[-DefaultParameter] <Hashtable>] [-ArgumentList <String[]>] [[-InputParameter] <String[]>] [[-ExcludeParameter] <String[]>] [-DefaultOverride] [-VariableInput] [-VariableName <String>] [-SerializationDepth <UInt32>] [-CrossStream] [-Where <ScriptBlock>] [-Begin <ScriptBlock>] [-Process <ScriptBlock>] [-End <ScriptBlock>] [-PipeTo <ScriptBlock>] [<CommonParameters>]
+Out-Splat [-CommandName] <String> [[-DefaultParameter] <Hashtable>] [-ArgumentList <String[]>] [[-InputParameter] <String[]>] [[-ExcludeParameter] <String[]>] [-DefaultOverride] [-VariableInput] [-VariableName <String>] [-SerializationDepth <UInt32>] [-CrossStream] [-Where <ScriptBlock>] [-Begin <ScriptBlock>] [-Process <ScriptBlock>] [-End <ScriptBlock>] [-PipeTo <ScriptBlock>] [-OutputPath <String>] [<CommonParameters>]
 ```
 ```PowerShell
-Out-Splat [-CommandName] <String> [[-DefaultParameter] <Hashtable>] [-ArgumentList <String[]>] [[-InputParameter] <String[]>] [[-ExcludeParameter] <String[]>] [-DefaultOverride] [-VariableInput] [-VariableName <String>] [-FunctionName] <String> [-Synopsis <String>] [-Description <String>] [-Example <String[]>] [-Link <String[]>] [-Note <String>] [-CmdletBinding <String>] [-OutputType <String[]>] [-AdditionalParameter <Hashtable>] [-SerializationDepth <UInt32>] [-CrossStream] [-Where <ScriptBlock>] [-Begin <ScriptBlock>] [-Process <ScriptBlock>] [-End <ScriptBlock>] [-PipeTo <ScriptBlock>] [<CommonParameters>]
+Out-Splat [-CommandName] <String> [[-DefaultParameter] <Hashtable>] [-ArgumentList <String[]>] [[-InputParameter] <String[]>] [[-ExcludeParameter] <String[]>] [-DefaultOverride] [-VariableInput] [-VariableName <String>] [-FunctionName] <String> [-Synopsis <String>] [-Description <String>] [-Example <String[]>] [-Link <String[]>] [-Note <String>] [-CmdletBinding <String>] [-OutputType <String[]>] [-AdditionalParameter <Hashtable>] [-SerializationDepth <UInt32>] [-CrossStream] [-Where <ScriptBlock>] [-Begin <ScriptBlock>] [-Process <ScriptBlock>] [-End <ScriptBlock>] [-PipeTo <ScriptBlock>] [-OutputPath <String>] [<CommonParameters>]
 ```
 ```PowerShell
-Out-Splat [-CommandName] <String> [[-DefaultParameter] <Hashtable>] [-ArgumentList <String[]>] [[-InputParameter] <String[]>] [[-ExcludeParameter] <String[]>] [-DefaultOverride] [-VariableInput] [-VariableName <String>] [-SerializationDepth <UInt32>] -DynamicParameter [-Unpiped] [-Offset <Int32>] [-NewParameterSetName <String>] [-CrossStream] [-Where <ScriptBlock>] [-Begin <ScriptBlock>] [-Process <ScriptBlock>] [-End <ScriptBlock>] [-PipeTo <ScriptBlock>] [<CommonParameters>]
+Out-Splat [-CommandName] <String> [[-DefaultParameter] <Hashtable>] [-ArgumentList <String[]>] [[-InputParameter] <String[]>] [[-ExcludeParameter] <String[]>] [-DefaultOverride] [-VariableInput] [-VariableName <String>] [-SerializationDepth <UInt32>] -DynamicParameter [-Unpiped] [-Offset <Int32>] [-NewParameterSetName <String>] [-CrossStream] [-Where <ScriptBlock>] [-Begin <ScriptBlock>] [-Process <ScriptBlock>] [-End <ScriptBlock>] [-PipeTo <ScriptBlock>] [-OutputPath <String>] [<CommonParameters>]
 ```
