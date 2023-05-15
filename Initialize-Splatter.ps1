@@ -58,7 +58,12 @@
     # If set, splatter will be defined inline.
     # This will not preface Splatter with a param() block and PSScriptAnalyzer suppression messages
     [switch]
-    $Inline
+    $Inline,
+
+    # The output path.
+    # If provided, will output to this file and return the file.
+    [string]
+    $OutputPath
     )
 
     begin {
@@ -103,7 +108,7 @@ cXimMTbqP/VR4etMIgAA
     process {
         $myParams = @{} + $PSBoundParameters
         $c, $t, $id = 0, $Verb.Count, [Random]::new().Next()
-        @(
+        $SplatterScript = @(
         if (-not $NoLogo) {
             $logo = @(
                 $myModule.Name
@@ -190,6 +195,17 @@ param()'
         if (-not $NoLogo) {
             "#endregion $logo"
         }) -join [Environment]::NewLine
+
+        if ($outputPath) {
+            if (-not (Test-Path $outputPath)) {
+                $null = New-Item -ItemType File -Path $outputPath -Force
+            }
+            "$SplatterScript" | Set-Content -Path $outputPath
+            Get-Item -Path $outputPath
+        } else {
+            $SplatterScript
+        }
+
         Write-Progress "Initialized!" " "  -Completed -id $id
     }
 }
