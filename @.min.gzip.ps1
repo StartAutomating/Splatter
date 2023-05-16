@@ -1,4 +1,4 @@
-#region Splatter [ 0.5.4 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find -Compress -Minify )
+#region Splatter [ 0.5.5 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find -Compress -Minify )
 .([ScriptBlock]::Create(([IO.StreamReader]::new((
     [IO.Compression.GZipStream]::new([IO.MemoryStream]::new(
         [Convert]::FromBase64String('
@@ -74,4 +74,4 @@ ravatNDe3J+li/dS/gZtiOV/AdDBNlK4UQAA
         [IO.Compression.CompressionMode]'Decompress')),
     [Text.Encoding]::unicode)).ReadToEnd()
 ))
-#endregion Splatter [ 0.5.4 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find -Compress -Minify )
+#endregion Splatter [ 0.5.5 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find -Compress -Minify )
