@@ -22,6 +22,12 @@
             name = 'Run HelpOut'
             uses = 'StartAutomating/HelpOut@master'
             id = 'HelpOut'
-        }        
+        },
+        @{
+            name = 'Run Splatter (on branch)'
+            if   = '${{github.ref_name != ''main''}}'
+            uses = './'
+            id = 'SplatterBranch'
+        }
     )
 }
