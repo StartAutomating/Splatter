@@ -1,27 +1,27 @@
 ﻿<#
 .Synopsis
-    GitHub Action for PSMetrics
+    GitHub Action for Splatter
 .Description
-    GitHub Action for PSMetrics.  This will:
+    GitHub Action for Splatter.  This will:
 
-    * Import PSMetrics
-    * Run all *.PSMetrics.ps1 files beneath the workflow directory
-    * Run a .PSMetricsScript parameter
+    * Import Splatter
+    * Run all *.Splatter.ps1 files beneath the workflow directory
+    * Run a .SplatterScript parameter
 
     Any files changed can be outputted by the script, and those changes can be checked back into the repo.
     Make sure to use the "persistCredentials" option with checkout.
 #>
 
 param(
-# A PowerShell Script that uses PSMetrics.  
+# A PowerShell Script that uses Splatter.  
 # Any files outputted from the script will be added to the repository.
 # If those files have a .Message attached to them, they will be committed with that message.
 [string]
-$PSMetricsScript,
+$SplatterScript,
 
-# If set, will not process any files named *.PSMetrics.ps1
+# If set, will not process any files named *.Splatter.ps1
 [switch]
-$SkipPSMetricsPS1,
+$SkipSplatterPS1,
 
 # A list of modules to be installed from the PowerShell gallery before scripts run.
 [string[]]
@@ -92,24 +92,24 @@ if ($InstallModule) {
 #endregion -InstallModule
 
 $PSD1Found = Get-ChildItem -Recurse -Filter "*.psd1" |
-    Where-Object Name -eq 'PSMetrics.psd1' | 
+    Where-Object Name -eq 'Splatter.psd1' | 
     Select-Object -First 1
 
 if ($PSD1Found) {
     $PipeScriptModulePath = $PSD1Found
     Import-Module $PSD1Found -Force -PassThru | Out-Host
 } elseif ($env:GITHUB_ACTION_PATH) {
-    $PSMetricsModulePath = Join-Path $env:GITHUB_ACTION_PATH 'PSMetrics.psd1'
-    if (Test-path $PSMetricsModulePath) {
-        Import-Module $PSMetricsModulePath -Force -PassThru | Out-Host
+    $SplatterModulePath = Join-Path $env:GITHUB_ACTION_PATH 'Splatter.psd1'
+    if (Test-path $SplatterModulePath) {
+        Import-Module $SplatterModulePath -Force -PassThru | Out-Host
     } else {
-        throw "PSMetrics not found"
+        throw "Splatter not found"
     }
-} elseif (-not (Get-Module PSMetrics)) {    
+} elseif (-not (Get-Module Splatter)) {    
     throw "Action Path not found"
 }
 
-"::notice title=ModuleLoaded::PSMetrics Loaded from Path - $($PSMetricsModulePath)" | Out-Host
+"::notice title=ModuleLoaded::Splatter Loaded from Path - $($SplatterModulePath)" | Out-Host
 
 $anyFilesChanged = $false
 $totalFilesOutputted = 0 
@@ -189,28 +189,28 @@ if (-not $LASTEXITCODE) {
 }
 
 
-$PSMetricsScriptStart = [DateTime]::Now
-if ($PSMetricsScript) {
-    Invoke-Expression -Command $PSMetricsScript |
+$SplatterScriptStart = [DateTime]::Now
+if ($SplatterScript) {
+    Invoke-Expression -Command $SplatterScript |
         . ProcessActionOutput |
         Out-Host
 }
-$PSMetricsScriptTook = [Datetime]::Now - $PSMetricsScriptStart
+$SplatterScriptTook = [Datetime]::Now - $SplatterScriptStart
 
-"::notice title=Runtime::$($PSMetricsScriptTook.TotalMilliseconds)"   | Out-Host
+"::notice title=Runtime::$($SplatterScriptTook.TotalMilliseconds)"   | Out-Host
 
-$PSMetricsPS1Start = [DateTime]::Now
-$PSMetricsPS1List  = @()
-if (-not $SkipPSMetricsPS1) {
-    $PSMetricsFiles = @(
+$SplatterPS1Start = [DateTime]::Now
+$SplatterPS1List  = @()
+if (-not $SkipSplatterPS1) {
+    $SplatterFiles = @(
     Get-ChildItem -Recurse -Path $env:GITHUB_WORKSPACE |
-        Where-Object Name -Match '\.PSMetrics\.ps1$')
+        Where-Object Name -Match '\.Splatter\.ps1$')
         
-    if ($PSMetricsFiles) {
-        $PSMetricsFiles|        
+    if ($SplatterFiles) {
+        $SplatterFiles|        
         ForEach-Object {
-            $PSMetricsPS1List += $_.FullName.Replace($env:GITHUB_WORKSPACE, '').TrimStart('/')
-            $PSMetricsPS1Count++
+            $SplatterPS1List += $_.FullName.Replace($env:GITHUB_WORKSPACE, '').TrimStart('/')
+            $SplatterPS1Count++
             "::notice title=Running::$($_.Fullname)" | Out-Host
             . $_.FullName |            
                 . ProcessActionOutput  | 
@@ -219,9 +219,9 @@ if (-not $SkipPSMetricsPS1) {
     }
 }
 
-$PSMetricsPS1EndStart = [DateTime]::Now
-$PSMetricsPS1Took = [Datetime]::Now - $PSMetricsPS1Start
-"Ran $($PSMetricsPS1List.Length) Files in $($PSMetricsPS1Took.TotalMilliseconds)" | Out-Host
+$SplatterPS1EndStart = [DateTime]::Now
+$SplatterPS1Took = [Datetime]::Now - $SplatterPS1Start
+"Ran $($SplatterPS1List.Length) Files in $($SplatterPS1Took.TotalMilliseconds)" | Out-Host
 if ($filesChanged) {
     "::group::$($filesOutputted.Length) files generated with $($filesChanged.Length) changes" | Out-Host
     $FilesChanged -join ([Environment]::NewLine) | Out-Host
