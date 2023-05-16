@@ -183,6 +183,22 @@ This will not preface Splatter with a param() block and PSScriptAnalyzer suppres
 
 
 
+#### **OutputPath**
+
+The output path.
+If provided, will output to this file and return the file.
+
+
+
+
+
+
+|Type      |Required|Position|PipelineInput|
+|----------|--------|--------|-------------|
+|`[String]`|false   |2       |false        |
+
+
+
 
 
 ---
@@ -190,5 +206,5 @@ This will not preface Splatter with a param() block and PSScriptAnalyzer suppres
 
 ### Syntax
 ```PowerShell
-Initialize-Splatter [[-Verb] <String[]>] [-Compress] [-Minify] [-NoLogo] [-NoHelp] [-AsFunction] [-Inline] [<CommonParameters>]
+Initialize-Splatter [[-Verb] <String[]>] [-Compress] [-Minify] [-NoLogo] [-NoHelp] [-AsFunction] [-Inline] [[-OutputPath] <String>] [<CommonParameters>]
 ```

@@ -1,3 +1,12 @@
+### 0.5.5:
+
+* Splatter is now a GitHub Action! (#18)
+* Initialize-Splatter now returns a `[ScriptBlock]` (#21)
+* Initialize-Splatter/Out-Splat now have -OutputPath (#19/#20)
+* Added Sponsorship (#22)
+
+---
+
 ### 0.5.4:
 
 * New Splatter Logo (#12)

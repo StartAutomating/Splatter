@@ -1,9 +1,9 @@
 ﻿@{
     CompanyName = 'Start-Automating'
-    Copyright = '2019-2021 Start-Automating'
+    Copyright = '2019-2023 Start-Automating'
     RootModule = 'Splatter.psm1'
     Description = 'Simple Scripts to Supercharge Splatting'
-    ModuleVersion = '0.5.4'
+    ModuleVersion = '0.5.5'
     AliasesToExport = '*'
     VariablesToExport = '*'
     GUID = '033f35ed-f8a7-4911-bb62-2691f505ed43'
@@ -15,6 +15,15 @@
             IconURI    = 'https://raw.githubusercontent.com/StartAutomating/Splatter/master/Assets/Splatter.png'
             Tags = 'Splatting', 'PipeScript'
             ReleaseNotes = @'
+### 0.5.5:
+
+* Splatter is now a GitHub Action! (#18)
+* Initialize-Splatter now returns a `[ScriptBlock]` (#21)
+* Initialize-Splatter/Out-Splat now have -OutputPath (#19/#20)
+* Added Sponsorship (#22)
+
+---
+
 ### 0.5.4:
 
 * New Splatter Logo (#12)
