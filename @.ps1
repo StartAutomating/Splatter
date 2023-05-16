@@ -1,4 +1,4 @@
-#region Splatter [ 0.5.4 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find )
+#region Splatter [ 0.5.5 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find )
 
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification="This Declares Variables for Other Scripts")]
 param()
@@ -570,4 +570,4 @@ ${??@}=${FindSplat}=${fSplat}={
         Write-Progress -Id $id -Completed -Activity 'Finding Splats' -Status 'Complete!'
     }
 }
-#endregion Splatter [ 0.5.4 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find )
+#endregion Splatter [ 0.5.5 ] : Simple Scripts to Supercharge Splatting (Install-Module Splatter, then Initialize-Splatter -Verb Get,Use,Find )
