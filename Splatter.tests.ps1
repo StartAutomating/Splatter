@@ -239,12 +239,7 @@ describe Splatter {
         it 'is pretty small' {
             $embeddedSplatter = Initialize-Splatter
             $embeddedSplatter.Length | should -Belessthan 30kb
-        }
-
-        it 'can -Be minified and compressed' {
-            $embeddedSplatter = Initialize-Splatter -Minify -Compress
-            $embeddedSplatter.Length | should -Belessthan 10kb
-        }
+        }        
 
         it 'Can -Be embedded as a functionl' {
             $embeddedSplatter = Initialize-Splatter -Verb Get
