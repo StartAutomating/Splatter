@@ -48,4 +48,10 @@ $myScriptTypeCommands = foreach ($myScriptType in $myModule.Name) {
 
 . ([ScriptBlock]::Create($myScriptTypeCommands -join [Environment]::NewLine))
 
-Export-ModuleMember -Alias * -Function * -Variable $myModule.Name
+${?@}  = $gSplat = $GetSplat   = ${function:Get-Splat}
+${??@} = $fSplat = $FindSplat  = ${function:Find-Splat}
+${*@}  = $mSplat = $MergeSplat = ${function:Merge-Splat}
+${.@}  = $uSplat = $UseSplat   = ${function:Use-Splat}
+${=>@} = $uSplat = $OutSplat   = ${function:Out-Splat}
+
+Export-ModuleMember -Alias * -Function * -Variable $myModule.Name, '*@', '*Splat'
