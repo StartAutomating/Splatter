@@ -1,18 +1,60 @@
-﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification="This exports variables")]
-param()
-. $psScriptRoot\Find-Splat.ps1
-. $psScriptRoot\Get-Splat.ps1
-. $psScriptRoot\Merge-Splat.ps1
-. $psScriptRoot\Out-Splat.ps1
-. $psScriptRoot\Use-Splat.ps1
+$commandsPath = Join-Path $PSScriptRoot .\Commands
+:ToIncludeFiles foreach ($file in (Get-ChildItem -Path "$commandsPath" -Filter "*-*" -Recurse)) {
+    if ($file.Extension -ne '.ps1')      { continue }  # Skip if the extension is not .ps1
+    foreach ($exclusion in '\.[^\.]+\.ps1$') {
+        if (-not $exclusion) { continue }
+        if ($file.Name -match $exclusion) {
+            continue ToIncludeFiles  # Skip excluded files
+        }
+    }     
+    . $file.FullName
+}
 
-. $psScriptRoot\Initialize-Splatter.ps1
+$myModule = $MyInvocation.MyCommand.ScriptBlock.Module
+$ExecutionContext.SessionState.PSVariable.Set($myModule.Name, $myModule)
+$myModule.pstypenames.insert(0, $myModule.Name)
 
-# Assign each splatter command to a variable for another easy way to access
-${?@}  = $gSplat = $GetSplat   = ${function:Get-Splat}
-${??@} = $fSplat = $FindSplat  = ${function:Find-Splat}
-${*@}  = $mSplat = $MergeSplat = ${function:Merge-Splat}
-${.@}  = $uSplat = $UseSplat   = ${function:Use-Splat}
-${=>@} = $uSplat = $OutSplat   = ${function:Out-Splat}
+New-PSDrive -Name $MyModule.Name -PSProvider FileSystem -Scope Global -Root $PSScriptRoot -ErrorAction Ignore
 
-Export-ModuleMember -Alias * -Function * -Variable *
+if ($home) {
+    $MyModuleProfileDirectory = Join-Path $home $MyModule.Name
+    if (-not (Test-Path $MyModuleProfileDirectory)) {
+        $null = New-Item -ItemType Directory -Path $MyModuleProfileDirectory -Force
+    }
+    New-PSDrive -Name "My$($MyModule.Name)" -PSProvider FileSystem -Scope Global -Root $MyModuleProfileDirectory -ErrorAction Ignore
+}
+
+$KnownVerbs = Get-Verb | Select-Object -ExpandProperty Verb
+
+# Set a script variable of this, set to the module
+# (so all scripts in this scope default to the correct `$this`)
+$script:this = $myModule
+
+$myScriptTypeCommands = foreach ($myScriptType in $myModule.Name) {
+    $myTypeData = Get-TypeData $myScriptType
+    if (-not $myTypeData.Members) { continue } 
+    foreach ($myMemberInfo in $myTypeData.Members.GetEnumerator()) {
+        $myMemberName = $myMemberInfo.Key
+        $myMember = $myMemberInfo.Value
+        if ($myMember -is [Management.Automation.Runspaces.ScriptMethodData]) {            
+            $myFunctionName = 
+                if ($myMemberName -in $KnownVerbs) {
+                    "$($myMemberName)-$($myScriptType)"
+                } else {
+                    "$($myScriptType).$($myMemberName)"
+                }
+            # Declare My Function
+            "function $myFunctionName { $($myMember.Script) }"
+            if ($myMemberName -in $KnownVerbs) {
+                # Alias it if it's a known verb, so both verb and noun form are available.
+                "Set-Alias -Name '$($myScriptType).$($myMemberName)' -Value '$myFunctionName'"            
+            }
+            
+            "Set-Alias -Name '$($myMemberName).$($myScriptType)' -Value '$myFunctionName'"
+        }
+    }        
+}
+
+. ([ScriptBlock]::Create($myScriptTypeCommands -join [Environment]::NewLine))
+
+Export-ModuleMember -Alias * -Function * -Variable $myModule.Name
