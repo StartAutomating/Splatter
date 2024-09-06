@@ -1,6 +1,8 @@
 ﻿#requires -Module PSDevOps
 #requires -Module Splatter
-Import-BuildStep -ModuleName Splatter
+Import-BuildStep -SourcePath (
+    $psScriptRoot | Join-Path -ChildPath "GitHub"
+) -BuildSystem GitHubAction
 Push-Location ($PSScriptRoot | Split-Path)
 New-GitHubAction -Name "UseSplatter" -Description @'
 Simple Scripts to Supercharge Splatting
